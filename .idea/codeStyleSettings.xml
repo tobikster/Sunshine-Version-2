@@ -99,6 +99,7 @@
           </extensions>
         </Objective-C-extensions>
         <XML>
+          <option name="XML_ATTRIBUTE_WRAP" value="2" />
           <option name="XML_LEGACY_SETTINGS_IMPORTED" value="true" />
         </XML>
         <codeStyleSettings language="JAVA">

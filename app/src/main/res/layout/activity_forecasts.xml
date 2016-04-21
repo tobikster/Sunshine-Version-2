@@ -7,8 +7,8 @@
                                                  android:fitsSystemWindows="true"
                                                  tools:context=".activities.ForecastsActivity">
 
-	<android.support.design.widget.AppBarLayout android:layout_height="wrap_content"
-	                                            android:layout_width="match_parent"
+	<android.support.design.widget.AppBarLayout android:layout_width="match_parent"
+	                                            android:layout_height="wrap_content"
 	                                            android:theme="@style/AppTheme.AppBarOverlay">
 
 		<android.support.v7.widget.Toolbar android:id="@+id/toolbar"
@@ -19,12 +19,10 @@
 
 	</android.support.design.widget.AppBarLayout>
 
-	<fragment android:id="@+id/fragment"
-	          android:name="com.android.example.sunshine.fragments.ForecastsFragment"
-	          android:layout_width="match_parent"
-	          android:layout_height="match_parent"
-	          app:layout_behavior="@string/appbar_scrolling_view_behavior"
-	          tools:layout="@layout/fragment_forecasts"/>
+	<FrameLayout android:id="@+id/container"
+	             android:layout_width="match_parent"
+	             android:layout_height="match_parent"
+	             android:layout_marginTop="?attr/actionBarSize"/>
 
 
 </android.support.design.widget.CoordinatorLayout>
