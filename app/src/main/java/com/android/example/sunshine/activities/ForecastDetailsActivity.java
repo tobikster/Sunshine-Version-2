@@ -1,27 +1,30 @@
 package com.android.example.sunshine.activities;
 
 import android.content.Intent;
-import android.os.Build;
+import android.net.NetworkInfo;
 import android.os.Bundle;
+import android.support.v4.app.Fragment;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.widget.ShareActionProvider;
 
 import com.android.example.sunshine.R;
+import com.android.example.sunshine.fragments.ForecastDetailsFragment;
 
 public class ForecastDetailsActivity extends AppCompatActivity {
-	public static final String EXTRA_FORECAST = "extra_forecast";
-
-	ShareActionProvider mShareActionProvider;
-
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_forecast_details);
-		Toolbar toolbar = (Toolbar)findViewById(R.id.toolbar);
+		Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
 		setSupportActionBar(toolbar);
+		if (savedInstanceState == null) {
+			Fragment detailsFragment = ForecastDetailsFragment.newInstance(getIntent().getData());
+			getSupportFragmentManager().beginTransaction()
+			                           .add(R.id.weather_detail_container, detailsFragment)
+			                           .commit();
+		}
 	}
 
 	@Override

@@ -1,12 +1,12 @@
 package com.android.example.sunshine.activities;
 
-import android.content.SharedPreferences;
+import android.content.Intent;
 import android.os.Bundle;
 import android.preference.ListPreference;
 import android.preference.Preference;
 import android.preference.PreferenceActivity;
 import android.preference.PreferenceManager;
-import android.view.KeyEvent;
+import android.support.annotation.Nullable;
 
 import com.android.example.sunshine.R;
 
@@ -71,4 +71,13 @@ public class SettingsActivity extends PreferenceActivity
 		return true;
 	}
 
+	@Nullable
+	@Override
+	public Intent getParentActivityIntent() {
+		Intent parentActivityIntent = super.getParentActivityIntent();
+		if(parentActivityIntent != null) {
+			parentActivityIntent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+		}
+		return parentActivityIntent;
+	}
 }

@@ -18,17 +18,13 @@ package com.android.example.sunshine.utils;
 import android.content.ContentUris;
 import android.content.ContentValues;
 import android.content.Context;
-import android.content.SharedPreferences;
 import android.database.Cursor;
-import android.database.DatabaseUtils;
 import android.net.Uri;
 import android.os.AsyncTask;
-import android.preference.PreferenceManager;
 import android.text.format.Time;
 import android.util.Log;
-import android.widget.ArrayAdapter;
 
-import com.android.example.sunshine.R;
+import com.android.example.sunshine.BuildConfig;
 import com.android.example.sunshine.data.WeatherContract;
 
 import org.json.JSONArray;
@@ -41,20 +37,19 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
-import java.text.SimpleDateFormat;
-import java.util.Date;
 import java.util.Vector;
 
 public class FetchWeatherTask extends AsyncTask<String, Void, String[]> {
 
-	private final static String API_KEY = "d6c755bc2bccd4dbdc69bd95dec436ae";
+	private final String TAG = FetchWeatherTask.class.getSimpleName();
+
+	private final static String API_KEY = BuildConfig.OPEN_WEATHER_MAP_API_KEY;
 	private final static String FORECAST_BASE_URL = "http://api.openweathermap.org/data/2.5/forecast/daily?";
 	private final static String QUERY_PARAM = "q";
 	private final static String FORMAT_PARAM = "mode";
 	private final static String UNITS_PARAM = "units";
 	private final static String DAYS_PARAM = "cnt";
 	private final static String PARAM_API_KEY = "appid";
-	private final String LOG_TAG = FetchWeatherTask.class.getSimpleName();
 	private final Context mContext;
 
 	public FetchWeatherTask(Context context) {
@@ -240,7 +235,7 @@ public class FetchWeatherTask extends AsyncTask<String, Void, String[]> {
 			}
 		}
 		catch (JSONException e) {
-			Log.e(LOG_TAG, e.getMessage(), e);
+			Log.e(TAG, e.getMessage(), e);
 			e.printStackTrace();
 		}
 		return null;
@@ -282,6 +277,8 @@ public class FetchWeatherTask extends AsyncTask<String, Void, String[]> {
 
 			URL url = new URL(builtUri.toString());
 
+			Log.d(TAG, String.format("doInBackground: openWeather url requested: %s", url));
+
 			// Create the request to OpenWeatherMap, and open the connection
 			urlConnection = (HttpURLConnection) url.openConnection();
 			urlConnection.setRequestMethod("GET");
@@ -289,7 +286,7 @@ public class FetchWeatherTask extends AsyncTask<String, Void, String[]> {
 
 			// Read the input stream into a String
 			InputStream inputStream = urlConnection.getInputStream();
-			StringBuffer buffer = new StringBuffer();
+			StringBuilder buffer = new StringBuilder();
 			if (inputStream == null) {
 				// Nothing to do.
 				return null;
@@ -301,7 +298,7 @@ public class FetchWeatherTask extends AsyncTask<String, Void, String[]> {
 				// Since it's JSON, adding a newline isn't necessary (it won't affect parsing)
 				// But it does make debugging a *lot* easier if you print out the completed
 				// buffer for debugging.
-				buffer.append(line + "\n");
+				buffer.append(line).append("\n");
 			}
 
 			if (buffer.length() == 0) {
@@ -311,7 +308,7 @@ public class FetchWeatherTask extends AsyncTask<String, Void, String[]> {
 			forecastJsonStr = buffer.toString();
 		}
 		catch (IOException e) {
-			Log.e(LOG_TAG, "Error ", e);
+			Log.e(TAG, "Error ", e);
 			// If the code didn't successfully get the weather data, there's no point in attemping
 			// to parse it.
 			return null;
@@ -325,7 +322,7 @@ public class FetchWeatherTask extends AsyncTask<String, Void, String[]> {
 					reader.close();
 				}
 				catch (final IOException e) {
-					Log.e(LOG_TAG, "Error closing stream", e);
+					Log.e(TAG, "Error closing stream", e);
 				}
 			}
 		}
@@ -334,7 +331,7 @@ public class FetchWeatherTask extends AsyncTask<String, Void, String[]> {
 			return getWeatherDataFromJson(forecastJsonStr, locationQuery);
 		}
 		catch (JSONException e) {
-			Log.e(LOG_TAG, e.getMessage(), e);
+			Log.e(TAG, e.getMessage(), e);
 			e.printStackTrace();
 		}
 		// This will only happen if there was an error getting or parsing the forecast.

@@ -18,6 +18,8 @@ import com.android.example.sunshine.utils.Utility;
  * android.widget.ListView}.
  */
 public class ForecastAdapter extends CursorAdapter {
+	@SuppressWarnings("unused")
+	private static final String TAG = ForecastAdapter.class.getSimpleName();
 	private static final int VIEW_TYPE_TODAY = 0;
 	private static final int VIEW_TYPE_FUTURE_DAY = 1;
 
@@ -30,7 +32,9 @@ public class ForecastAdapter extends CursorAdapter {
 	 */
 	private String formatHighLows(double high, double low) {
 		boolean isMetric = Utility.isMetric(mContext);
-		return Utility.formatTemperature(high, isMetric) + "/" + Utility.formatTemperature(low, isMetric);
+		return Utility.formatTemperature(mContext, high, isMetric) +
+		       "/" +
+		       Utility.formatTemperature(mContext, low, isMetric);
 	}
 
 	private String convertCursorRowToUXFormat(Cursor cursor) {
@@ -55,38 +59,55 @@ public class ForecastAdapter extends CursorAdapter {
 	@Override
 	public View newView(Context context, Cursor cursor, ViewGroup parent) {
 		final int viewType = getItemViewType(cursor.getPosition());
-		final int layoutId = (viewType == VIEW_TYPE_TODAY) ? R.layout.list_item_forecast_today : R.layout.list_item_forecast;
-		return LayoutInflater.from(context).inflate(layoutId, parent, false);
+		final int layoutId = (viewType ==
+		                      VIEW_TYPE_TODAY) ? R.layout.list_item_forecast_today : R.layout.list_item_forecast;
+		View view = LayoutInflater.from(context).inflate(layoutId, parent, false);
+		ViewHolder viewHolder = new ViewHolder(view);
+		view.setTag(viewHolder);
+		return view;
 	}
 
 	@Override
 	public void bindView(View view, Context context, Cursor cursor) {
-		// our view is pretty simple here --- just a text view
-		// we'll keep the UI functional with a simple (and slow!) binding.
+		final boolean isMetric = Utility.isMetric(mContext);
 
-		if (cursor.moveToFirst()) {
-			final boolean isMetric = Utility.isMetric(mContext);
+		final int itemType = getItemViewType(cursor.getPosition());
 
-			final int weatherId = cursor.getInt(ForecastsFragment.COL_WEATHER_ID);
-			final ImageView iconView = (ImageView) view.findViewById(R.id.list_item_icon);
-			final TextView dateTextView = (TextView) view.findViewById(R.id.list_item_date_textview);
-			final TextView highTempTextView = (TextView) view.findViewById(R.id.list_item_high_textview);
-			final TextView lowTempTextView = (TextView) view.findViewById(R.id.list_item_low_textview);
-			final TextView weatherDescriptionTextView = (TextView) view.findViewById(R.id.list_item_forecast_textview);
+		ViewHolder viewHolder = (ViewHolder) view.getTag();
 
-			final String date = Utility
-					.getFriendlyDayString(mContext, cursor.getLong(ForecastsFragment.COL_WEATHER_DATE));
-			final String highTemp = Utility
-					.formatTemperature(cursor.getDouble(ForecastsFragment.COL_WEATHER_MAX_TEMP), isMetric);
-			final String lowTemp = Utility
-					.formatTemperature(cursor.getDouble(ForecastsFragment.COL_WEATHER_MIN_TEMP), isMetric);
-			final String weatherDescription = cursor.getString(ForecastsFragment.COL_WEATHER_DESC);
+		final int weatherId = cursor.getInt(ForecastsFragment.COL_WEATHER_CONDITION_ID);
+		final int weatherIconResource = (itemType == VIEW_TYPE_TODAY) ?
+				Utility.getArtResourceForWeatherCondition(weatherId) :
+				Utility.getIconResourceForWeatherCondition(weatherId);
 
-			iconView.setImageResource(R.mipmap.ic_launcher);
-			dateTextView.setText(date);
-			highTempTextView.setText(highTemp);
-			lowTempTextView.setText(lowTemp);
-			weatherDescriptionTextView.setText(weatherDescription);
+		final String date = Utility
+				.getFriendlyDayString(mContext, cursor.getLong(ForecastsFragment.COL_WEATHER_DATE));
+		final String highTemp = Utility
+				.formatTemperature(mContext, cursor.getDouble(ForecastsFragment.COL_WEATHER_MAX_TEMP), isMetric);
+		final String lowTemp = Utility
+				.formatTemperature(mContext, cursor.getDouble(ForecastsFragment.COL_WEATHER_MIN_TEMP), isMetric);
+		final String weatherDescription = cursor.getString(ForecastsFragment.COL_WEATHER_DESC);
+
+		viewHolder.mIconView.setImageResource(weatherIconResource);
+		viewHolder.mDateTextView.setText(date);
+		viewHolder.mHighTempTextView.setText(highTemp);
+		viewHolder.mLowTempTextView.setText(lowTemp);
+		viewHolder.mWeatherDescriptionTextView.setText(weatherDescription);
+	}
+
+	static class ViewHolder {
+		final ImageView mIconView;
+		final TextView mDateTextView;
+		final TextView mHighTempTextView;
+		final TextView mLowTempTextView;
+		final TextView mWeatherDescriptionTextView;
+
+		public ViewHolder(View view) {
+			mIconView = (ImageView) view.findViewById(R.id.list_item_icon);
+			mDateTextView = (TextView) view.findViewById(R.id.list_item_date_textview);
+			mHighTempTextView = (TextView) view.findViewById(R.id.list_item_high_textview);
+			mLowTempTextView = (TextView) view.findViewById(R.id.list_item_low_textview);
+			mWeatherDescriptionTextView = (TextView) view.findViewById(R.id.list_item_forecast_textview);
 		}
 	}
 }

@@ -27,11 +27,12 @@ import android.net.Uri;
 import android.support.annotation.NonNull;
 
 public class WeatherProvider extends ContentProvider {
-
 	static final int WEATHER = 100;
 	static final int WEATHER_WITH_LOCATION = 101;
 	static final int WEATHER_WITH_LOCATION_AND_DATE = 102;
 	static final int LOCATION = 300;
+	@SuppressWarnings("unused")
+	private static final String TAG = WeatherProvider.class.getSimpleName();
 	// The URI Matcher used by this content provider.
 	private static final UriMatcher sUriMatcher = buildUriMatcher();
 	private static final SQLiteQueryBuilder sWeatherByLocationSettingQueryBuilder;
@@ -119,11 +120,6 @@ public class WeatherProvider extends ContentProvider {
 		return true;
 	}
 
-	/*
-		Students: Here's where you'll code the getType function that uses the UriMatcher.  You can
-		test this by uncommenting testGetType in TestProvider.
-
-	 */
 	@Override
 	public String getType(@NonNull Uri uri) {
 		// Use the Uri Matcher to determine what kind of URI this is.
@@ -187,7 +183,9 @@ public class WeatherProvider extends ContentProvider {
 			default:
 				throw new UnsupportedOperationException("Unknown uri: " + uri);
 		}
-		retCursor.setNotificationUri(getContext().getContentResolver(), uri);
+		if(getContext() != null) {
+			retCursor.setNotificationUri(getContext().getContentResolver(), uri);
+		}
 		return retCursor;
 	}
 
@@ -211,7 +209,7 @@ public class WeatherProvider extends ContentProvider {
 			}
 			case LOCATION: {
 				long _id = db.insert(WeatherContract.LocationEntry.TABLE_NAME, null, values);
-				if(_id > 0) {
+				if (_id > 0) {
 					returnUri = WeatherContract.LocationEntry.buildLocationUri(_id);
 				}
 				else {
@@ -222,7 +220,9 @@ public class WeatherProvider extends ContentProvider {
 			default:
 				throw new UnsupportedOperationException("Unknown uri: " + uri);
 		}
-		getContext().getContentResolver().notifyChange(uri, null);
+		if (getContext() != null) {
+			getContext().getContentResolver().notifyChange(uri, null);
+		}
 		return returnUri;
 	}
 
@@ -231,11 +231,11 @@ public class WeatherProvider extends ContentProvider {
 		final SQLiteDatabase db = mOpenHelper.getWritableDatabase();
 		final int deletedRows;
 
-		if(selection == null) {
+		if (selection == null) {
 			selection = "1";
 		}
 
-		switch(sUriMatcher.match(uri)) {
+		switch (sUriMatcher.match(uri)) {
 			case WEATHER: {
 				deletedRows = db.delete(WeatherContract.WeatherEntry.TABLE_NAME, selection, selectionArgs);
 				break;
@@ -248,8 +248,10 @@ public class WeatherProvider extends ContentProvider {
 				throw new UnsupportedOperationException("Unknown uri: " + uri);
 		}
 
-		if(deletedRows > 0) {
-			getContext().getContentResolver().notifyChange(uri, null);
+		if (deletedRows > 0) {
+			if (getContext() != null) {
+				getContext().getContentResolver().notifyChange(uri, null);
+			}
 		}
 
 		db.close();
@@ -269,7 +271,7 @@ public class WeatherProvider extends ContentProvider {
 		final SQLiteDatabase db = mOpenHelper.getWritableDatabase();
 		final int updatedRows;
 
-		switch(sUriMatcher.match(uri)) {
+		switch (sUriMatcher.match(uri)) {
 			case WEATHER: {
 				updatedRows = db.update(WeatherContract.WeatherEntry.TABLE_NAME, values, selection, selectionArgs);
 				break;
@@ -282,8 +284,10 @@ public class WeatherProvider extends ContentProvider {
 				throw new UnsupportedOperationException("Unknown uri: " + uri);
 		}
 
-		if(updatedRows > 0) {
-			getContext().getContentResolver().notifyChange(uri, null);
+		if (updatedRows > 0) {
+			if (getContext() != null) {
+				getContext().getContentResolver().notifyChange(uri, null);
+			}
 		}
 
 		db.close();
@@ -291,7 +295,7 @@ public class WeatherProvider extends ContentProvider {
 	}
 
 	@Override
-	public int bulkInsert(Uri uri, ContentValues[] values) {
+	public int bulkInsert(@NonNull Uri uri, @NonNull ContentValues[] values) {
 		final SQLiteDatabase db = mOpenHelper.getWritableDatabase();
 		final int match = sUriMatcher.match(uri);
 		switch (match) {
@@ -311,16 +315,19 @@ public class WeatherProvider extends ContentProvider {
 				finally {
 					db.endTransaction();
 				}
-				getContext().getContentResolver().notifyChange(uri, null);
+				if (getContext() != null) {
+					getContext().getContentResolver().notifyChange(uri, null);
+				}
 				return returnCount;
 			default:
 				return super.bulkInsert(uri, values);
 		}
 	}
 
-	// You do not need to call this method. This is a method specifically to assist the testing
-	// framework in running smoothly. You can read more at:
-	// http://developer.android.com/reference/android/content/ContentProvider.html#shutdown()
+	/**
+	 * You do not need to call this method. This is a method specifically to assist the testing framework in running
+	 * smoothly. You can read more at: <a href="http://developer.android.com/reference/android/content/ContentProvider.html#shutdown()">http://developer.android.com/reference/android/content/ContentProvider.html#shutdown()</a>
+	 */
 	@Override
 	@TargetApi(11)
 	public void shutdown() {
