@@ -12,7 +12,6 @@ import android.support.v4.content.CursorLoader;
 import android.support.v4.content.Loader;
 import android.support.v4.view.MenuItemCompat;
 import android.support.v7.widget.ShareActionProvider;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -67,7 +66,7 @@ public class ForecastDetailsFragment extends Fragment implements LoaderManager.L
 
 	ShareActionProvider mShareActionProvider;
 
-	String mForecast;
+	String mSharingText;
 	Uri mWeatherUri;
 
 	public ForecastDetailsFragment() {
@@ -122,11 +121,8 @@ public class ForecastDetailsFragment extends Fragment implements LoaderManager.L
 		inflater.inflate(R.menu.fragment_forecast_details, menu);
 		final MenuItem shareMenuItem = menu.findItem(R.id.action_share);
 		mShareActionProvider = (ShareActionProvider) MenuItemCompat.getActionProvider(shareMenuItem);
-		if (mForecast != null) {
+		if (mSharingText != null) {
 			mShareActionProvider.setShareIntent(createShareForecastIntent());
-		}
-		else {
-			Log.d(TAG, "onCreateOptionsMenu: ShareActionProvider is null!");
 		}
 	}
 
@@ -136,10 +132,11 @@ public class ForecastDetailsFragment extends Fragment implements LoaderManager.L
 			shareIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_DOCUMENT);
 		}
 		else {
+			//noinspection deprecation
 			shareIntent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_WHEN_TASK_RESET);
 		}
 		shareIntent.setType("text/plain");
-		shareIntent.putExtra(Intent.EXTRA_TEXT, mForecast + " " + getString(R.string.sharing_hash_tag));
+		shareIntent.putExtra(Intent.EXTRA_TEXT, mSharingText);
 		return shareIntent;
 	}
 
@@ -182,13 +179,15 @@ public class ForecastDetailsFragment extends Fragment implements LoaderManager.L
 			                                                  data.getFloat(COL_WEATHER_DEGREES));
 			final String pressure = Utility.getFormattedPressure(getContext(), data.getFloat(COL_WEATHER_PRESSURE));
 
-			mForecast = String.format("%s - %s - %s/%s",
-			                          dateString,
-			                          weatherDescription,
-			                          temperatureMin,
-			                          temperatureMax);
+			mSharingText = String.format("%s - %s - %s/%s %s",
+			                             dateString,
+			                             weatherDescription,
+			                             temperatureMin,
+			                             temperatureMax,
+			                             getString(R.string.sharing_hash_tag));
 
 			mWeatherIconView.setImageResource(weatherIconResource);
+			mWeatherIconView.setContentDescription(weatherDescription);
 			mDateView.setText(dateString);
 			mHighTemperatureView.setText(temperatureMax);
 			mLowTemperatureView.setText(temperatureMin);

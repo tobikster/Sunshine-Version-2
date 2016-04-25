@@ -1,9 +1,9 @@
 package com.android.example.sunshine.activities;
 
 import android.content.Intent;
-import android.net.NetworkInfo;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
+import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.Menu;
@@ -19,6 +19,12 @@ public class ForecastDetailsActivity extends AppCompatActivity {
 		setContentView(R.layout.activity_forecast_details);
 		Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
 		setSupportActionBar(toolbar);
+
+		ActionBar actionBar = getSupportActionBar();
+		if (actionBar != null) {
+			actionBar.setDisplayHomeAsUpEnabled(true);
+		}
+
 		if (savedInstanceState == null) {
 			Fragment detailsFragment = ForecastDetailsFragment.newInstance(getIntent().getData());
 			getSupportFragmentManager().beginTransaction()

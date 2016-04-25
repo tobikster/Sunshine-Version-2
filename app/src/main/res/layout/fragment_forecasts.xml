@@ -7,7 +7,6 @@
 	<ListView android:id="@+id/list_view_forecast"
 	          style="@style/ForecastsListStyle"
 	          android:layout_width="match_parent"
-	          android:layout_height="match_parent"
-	          android:background="@drawable/touch_selector"/>
+	          android:layout_height="match_parent"/>
 
 </FrameLayout>

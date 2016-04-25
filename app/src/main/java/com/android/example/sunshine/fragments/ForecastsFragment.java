@@ -1,17 +1,14 @@
 package com.android.example.sunshine.fragments;
 
 import android.content.Context;
-import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
-import android.preference.PreferenceManager;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.LoaderManager;
 import android.support.v4.content.CursorLoader;
 import android.support.v4.content.Loader;
-import android.support.v4.widget.CursorAdapter;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -22,9 +19,9 @@ import android.widget.AdapterView;
 import android.widget.ListView;
 
 import com.android.example.sunshine.R;
-import com.android.example.sunshine.adapters.ForecastAdapter;
+import com.android.example.sunshine.adapters.ForecastsAdapter;
 import com.android.example.sunshine.data.WeatherContract;
-import com.android.example.sunshine.utils.FetchWeatherTask;
+import com.android.example.sunshine.sync.SunshineSyncAdapter;
 import com.android.example.sunshine.utils.Utility;
 
 /**
@@ -57,11 +54,13 @@ public class ForecastsFragment extends Fragment implements LoaderManager.LoaderC
 	ListView mForecastsListView;
 
 	Callback mCallback;
-	CursorAdapter mForecastAdapter;
+	ForecastsAdapter mForecastAdapter;
 	int mSelectedPosition;
+	boolean mTodayLayoutUsed;
 
 	public ForecastsFragment() {
 		mSelectedPosition = ListView.INVALID_POSITION;
+		mTodayLayoutUsed = true;
 	}
 
 	@Override
@@ -87,7 +86,7 @@ public class ForecastsFragment extends Fragment implements LoaderManager.LoaderC
 	public void onCreate(@Nullable Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setHasOptionsMenu(true);
-		if(savedInstanceState != null) {
+		if (savedInstanceState != null) {
 			mSelectedPosition = savedInstanceState.getInt(BUNDLE_KEY_SELECTED_POSITION);
 		}
 	}
@@ -103,14 +102,15 @@ public class ForecastsFragment extends Fragment implements LoaderManager.LoaderC
 
 		mForecastsListView = (ListView) view.findViewById(R.id.list_view_forecast);
 
-		mForecastAdapter = new ForecastAdapter(getActivity(), null, 0);
+		mForecastAdapter = new ForecastsAdapter(getActivity(), null, 0);
+		mForecastAdapter.setTodayLayoutUsed(mTodayLayoutUsed);
 		mForecastsListView.setAdapter(mForecastAdapter);
 		mForecastsListView.setOnItemClickListener(this);
 	}
 
 	@Override
 	public void onSaveInstanceState(Bundle outState) {
-		if(mSelectedPosition != ListView.INVALID_POSITION) {
+		if (mSelectedPosition != ListView.INVALID_POSITION) {
 			outState.putInt(BUNDLE_KEY_SELECTED_POSITION, mSelectedPosition);
 		}
 		super.onSaveInstanceState(outState);
@@ -144,13 +144,7 @@ public class ForecastsFragment extends Fragment implements LoaderManager.LoaderC
 	}
 
 	private void refreshForecast() {
-		final SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(getActivity());
-		final String location = preferences.getString(getString(R.string.pref_location_key),
-		                                              getString(R.string.pref_location_default));
-		final String units = preferences.getString(getString(R.string.pref_units_key),
-		                                           getString(R.string.pref_units_default));
-
-		new FetchWeatherTask(getContext()).execute(location, units);
+		SunshineSyncAdapter.syncImmediately(getContext());
 	}
 
 	@Override
@@ -179,7 +173,7 @@ public class ForecastsFragment extends Fragment implements LoaderManager.LoaderC
 	@Override
 	public void onLoadFinished(Loader<Cursor> loader, Cursor data) {
 		mForecastAdapter.swapCursor(data);
-		if(mSelectedPosition != ListView.INVALID_POSITION) {
+		if (mSelectedPosition != ListView.INVALID_POSITION) {
 			mForecastsListView.smoothScrollToPosition(mSelectedPosition);
 		}
 	}
@@ -206,6 +200,13 @@ public class ForecastsFragment extends Fragment implements LoaderManager.LoaderC
 	public void onLocationChanged() {
 		refreshForecast();
 		getLoaderManager().restartLoader(WEATHER_LOADER_ID, null, this);
+	}
+
+	public void setUseTodayLayout(boolean todayLayoutUsed) {
+		mTodayLayoutUsed = todayLayoutUsed;
+		if (mForecastAdapter != null) {
+			mForecastAdapter.setTodayLayoutUsed(todayLayoutUsed);
+		}
 	}
 
 	public interface Callback {

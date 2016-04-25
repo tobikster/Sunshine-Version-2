@@ -6,6 +6,7 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.support.v4.app.Fragment;
+import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
@@ -15,6 +16,7 @@ import android.view.MenuItem;
 import com.android.example.sunshine.R;
 import com.android.example.sunshine.fragments.ForecastDetailsFragment;
 import com.android.example.sunshine.fragments.ForecastsFragment;
+import com.android.example.sunshine.sync.SunshineSyncAdapter;
 import com.android.example.sunshine.utils.Utility;
 
 public class MainActivity extends AppCompatActivity implements ForecastsFragment.Callback {
@@ -29,18 +31,32 @@ public class MainActivity extends AppCompatActivity implements ForecastsFragment
 		super.onCreate(savedInstanceState);
 		mLocation = Utility.getPreferredLocation(this);
 		setContentView(R.layout.activity_main);
+		mTwoPaneLayout = findViewById(R.id.weather_detail_container) != null;
+
 		Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
 		setSupportActionBar(toolbar);
 
-		mTwoPaneLayout = findViewById(R.id.weather_detail_container) != null;
+		ActionBar actionBar = getSupportActionBar();
+		if (actionBar != null) {
+			actionBar.setDisplayUseLogoEnabled(true);
+			actionBar.setLogo(R.drawable.ic_logo);
+			actionBar.setTitle(null);
+			if(!mTwoPaneLayout) {
+				actionBar.setElevation(0f);
+			}
+		}
+		SunshineSyncAdapter.initializeSyncAdapter(this);
 	}
 
 	@Override
 	protected void onResume() {
 		super.onResume();
 		String currentLocation = Utility.getPreferredLocation(this);
+		ForecastsFragment forecastsFragment = (ForecastsFragment) getSupportFragmentManager().findFragmentById(R.id.fragment_forecasts);
+		if (mTwoPaneLayout && forecastsFragment != null) {
+			forecastsFragment.setUseTodayLayout(false);
+		}
 		if (currentLocation != null && !currentLocation.equals(mLocation)) {
-			ForecastsFragment forecastsFragment = (ForecastsFragment) getSupportFragmentManager().findFragmentById(R.id.fragment_forecasts);
 			if (forecastsFragment != null) {
 				forecastsFragment.onLocationChanged();
 			}

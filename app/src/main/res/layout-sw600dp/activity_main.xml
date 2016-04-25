@@ -6,10 +6,10 @@
 
 	<LinearLayout android:layout_width="match_parent"
 	              android:layout_height="match_parent"
+	              android:layout_marginTop="?attr/actionBarSize"
 	              android:baselineAligned="false"
 	              android:divider="?android:attr/dividerHorizontal"
 	              android:orientation="horizontal"
-	              android:paddingTop="?attr/actionBarSize"
 	              tools:context="com.android.example.sunshine.fragments.ForecastsFragment">
 
 		<fragment android:id="@+id/fragment_forecasts"

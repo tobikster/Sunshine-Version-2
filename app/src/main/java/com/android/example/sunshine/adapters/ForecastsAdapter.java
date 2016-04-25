@@ -14,41 +14,29 @@ import com.android.example.sunshine.fragments.ForecastsFragment;
 import com.android.example.sunshine.utils.Utility;
 
 /**
- * {@link ForecastAdapter} exposes a list of weather forecasts from a {@link android.database.Cursor} to a {@link
+ * {@link ForecastsAdapter} exposes a list of weather forecasts from a {@link android.database.Cursor} to a {@link
  * android.widget.ListView}.
  */
-public class ForecastAdapter extends CursorAdapter {
+public class ForecastsAdapter extends CursorAdapter {
 	@SuppressWarnings("unused")
-	private static final String TAG = ForecastAdapter.class.getSimpleName();
-	private static final int VIEW_TYPE_TODAY = 0;
-	private static final int VIEW_TYPE_FUTURE_DAY = 1;
+	private static final String TAG = ForecastsAdapter.class.getSimpleName();
+	static final int VIEW_TYPE_TODAY = 0;
+	static final int VIEW_TYPE_FUTURE_DAY = 1;
 
-	public ForecastAdapter(Context context, Cursor c, int flags) {
+	boolean mTodayLayoutUsed;
+
+	public ForecastsAdapter(Context context, Cursor c, int flags) {
 		super(context, c, flags);
+		mTodayLayoutUsed = true;
 	}
 
-	/**
-	 * Prepare the weather high/lows for presentation.
-	 */
-	private String formatHighLows(double high, double low) {
-		boolean isMetric = Utility.isMetric(mContext);
-		return Utility.formatTemperature(mContext, high, isMetric) +
-		       "/" +
-		       Utility.formatTemperature(mContext, low, isMetric);
-	}
-
-	private String convertCursorRowToUXFormat(Cursor cursor) {
-		String highAndLow = formatHighLows(cursor.getDouble(ForecastsFragment.COL_WEATHER_MAX_TEMP),
-		                                   cursor.getDouble(ForecastsFragment.COL_WEATHER_MIN_TEMP));
-
-		return Utility.formatDate(cursor.getLong(ForecastsFragment.COL_WEATHER_DATE)) +
-		       " - " + cursor.getString(ForecastsFragment.COL_WEATHER_DESC) +
-		       " - " + highAndLow;
+	public void setTodayLayoutUsed(boolean todayLayoutUsed) {
+		mTodayLayoutUsed = todayLayoutUsed;
 	}
 
 	@Override
 	public int getItemViewType(int position) {
-		return (position == 0) ? VIEW_TYPE_TODAY : VIEW_TYPE_FUTURE_DAY;
+		return (position == 0 && mTodayLayoutUsed) ? VIEW_TYPE_TODAY : VIEW_TYPE_FUTURE_DAY;
 	}
 
 	@Override
@@ -89,6 +77,7 @@ public class ForecastAdapter extends CursorAdapter {
 		final String weatherDescription = cursor.getString(ForecastsFragment.COL_WEATHER_DESC);
 
 		viewHolder.mIconView.setImageResource(weatherIconResource);
+		viewHolder.mIconView.setContentDescription(weatherDescription);
 		viewHolder.mDateTextView.setText(date);
 		viewHolder.mHighTempTextView.setText(highTemp);
 		viewHolder.mLowTempTextView.setText(lowTemp);
