@@ -1,15 +1,12 @@
 package com.android.example.sunshine.activities;
 
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.net.Uri;
 import android.os.Bundle;
-import android.preference.PreferenceManager;
 import android.support.v4.app.Fragment;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
-import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 
@@ -20,7 +17,7 @@ import com.android.example.sunshine.sync.SunshineSyncAdapter;
 import com.android.example.sunshine.utils.Utility;
 
 public class MainActivity extends AppCompatActivity implements ForecastsFragment.Callback {
-	@SuppressWarnings("Unused")
+	@SuppressWarnings({"unused"})
 	private static final String LOG_TAG = MainActivity.class.getSimpleName();
 	private static final String FORECAST_DETAILS_FRAGMENT_TAG = "forecast_details_fragment_tag";
 

@@ -428,10 +428,10 @@ public class SunshineSyncAdapter extends AbstractThreadedSyncAdapter {// Interva
 						String title = context.getString(R.string.app_name);
 
 						// Define the text of the forecast.
-						String contentText = String.format(context.getString(R.string.format_notification),
-						                                   desc,
-						                                   Utility.formatTemperature(context, high),
-						                                   Utility.formatTemperature(context, low));
+						String contentText = context.getString(R.string.format_notification,
+						                                       desc,
+						                                       Utility.formatTemperature(context, high),
+						                                       Utility.formatTemperature(context, low));
 
 						//build your notification here.
 						Intent intent = new Intent(context, MainActivity.class);

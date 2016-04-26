@@ -30,19 +30,17 @@ import com.android.example.sunshine.utils.Utility;
  */
 public class ForecastDetailsFragment extends Fragment implements LoaderManager.LoaderCallbacks<Cursor> {
 	public static final String ARG_WEATHER_URI = "arg_weather_uri";
-	private static final int COL_WEATHER_ID = 0;
-	private static final int COL_WEATHER_DATE = 1;
-	private static final int COL_WEATHER_DESC = 2;
-	private static final int COL_WEATHER_MAX_TEMP = 3;
-	private static final int COL_WEATHER_MIN_TEMP = 4;
-	private static final int COL_WEATHER_HUMIDITY = 5;
-	private static final int COL_WEATHER_WIND_SPEED = 6;
-	private static final int COL_WEATHER_DEGREES = 7;
-	private static final int COL_WEATHER_PRESSURE = 8;
-	private static final int COL_WEATHER_CONDITION_ID = 9;
+	private static final int COL_WEATHER_DATE = 0;
+	private static final int COL_WEATHER_DESC = 1;
+	private static final int COL_WEATHER_MAX_TEMP = 2;
+	private static final int COL_WEATHER_MIN_TEMP = 3;
+	private static final int COL_WEATHER_HUMIDITY = 4;
+	private static final int COL_WEATHER_WIND_SPEED = 5;
+	private static final int COL_WEATHER_DEGREES = 6;
+	private static final int COL_WEATHER_PRESSURE = 7;
+	private static final int COL_WEATHER_CONDITION_ID = 8;
 	private static final int DETAILED_WEATHER_LOADER_ID = 461;
 	private static final String[] FORECAST_COLUMNS = {
-	  WeatherContract.WeatherEntry.TABLE_NAME + "." + WeatherContract.WeatherEntry._ID,
 	  WeatherContract.WeatherEntry.COLUMN_DATE,
 	  WeatherContract.WeatherEntry.COLUMN_SHORT_DESC,
 	  WeatherContract.WeatherEntry.COLUMN_MAX_TEMP,
@@ -156,8 +154,6 @@ public class ForecastDetailsFragment extends Fragment implements LoaderManager.L
 	@Override
 	public void onLoadFinished(Loader<Cursor> loader, Cursor data) {
 		if (data.moveToFirst()) {
-			boolean isMetric = Utility.isMetric(getActivity());
-
 			final int weatherIconResource = Utility.getArtResourceForWeatherCondition(data.getInt(
 			  COL_WEATHER_CONDITION_ID));
 			final String dateString = Utility.formatDate(data.getLong(COL_WEATHER_DATE));

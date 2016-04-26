@@ -29,10 +29,10 @@ import android.support.annotation.NonNull;
 public class WeatherProvider extends ContentProvider {
 	@SuppressWarnings("unused")
 	private static final String LOG_TAG = WeatherProvider.class.getSimpleName();
-	private static final int WEATHER = 100;
-	private static final int WEATHER_WITH_LOCATION = 101;
-	private static final int WEATHER_WITH_LOCATION_AND_DATE = 102;
-	private static final int LOCATION = 300;
+	public static final int WEATHER = 100;
+	public static final int WEATHER_WITH_LOCATION = 101;
+	public static final int WEATHER_WITH_LOCATION_AND_DATE = 102;
+	public static final int LOCATION = 300;
 	// The URI Matcher used by this content provider.
 	private static final UriMatcher sUriMatcher = buildUriMatcher();
 	private static final SQLiteQueryBuilder sWeatherByLocationSettingQueryBuilder;
