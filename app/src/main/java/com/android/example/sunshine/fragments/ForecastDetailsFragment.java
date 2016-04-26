@@ -30,44 +30,44 @@ import com.android.example.sunshine.utils.Utility;
  */
 public class ForecastDetailsFragment extends Fragment implements LoaderManager.LoaderCallbacks<Cursor> {
 	public static final String ARG_WEATHER_URI = "arg_weather_uri";
-	static final int COL_WEATHER_ID = 0;
-	static final int COL_WEATHER_DATE = 1;
-	static final int COL_WEATHER_DESC = 2;
-	static final int COL_WEATHER_MAX_TEMP = 3;
-	static final int COL_WEATHER_MIN_TEMP = 4;
-	static final int COL_WEATHER_HUMIDITY = 5;
-	static final int COL_WEATHER_WIND_SPEED = 6;
-	static final int COL_WEATHER_DEGREES = 7;
-	static final int COL_WEATHER_PRESSURE = 8;
-	static final int COL_WEATHER_CONDITION_ID = 9;
-	static final int DETAILED_WEATHER_LOADER_ID = 461;
-	static final String[] FORECAST_COLUMNS = {
-			WeatherContract.WeatherEntry.TABLE_NAME + "." + WeatherContract.WeatherEntry._ID,
-			WeatherContract.WeatherEntry.COLUMN_DATE,
-			WeatherContract.WeatherEntry.COLUMN_SHORT_DESC,
-			WeatherContract.WeatherEntry.COLUMN_MAX_TEMP,
-			WeatherContract.WeatherEntry.COLUMN_MIN_TEMP,
-			WeatherContract.WeatherEntry.COLUMN_HUMIDITY,
-			WeatherContract.WeatherEntry.COLUMN_WIND_SPEED,
-			WeatherContract.WeatherEntry.COLUMN_DEGREES,
-			WeatherContract.WeatherEntry.COLUMN_PRESSURE,
-			WeatherContract.WeatherEntry.COLUMN_WEATHER_ID
+	private static final int COL_WEATHER_ID = 0;
+	private static final int COL_WEATHER_DATE = 1;
+	private static final int COL_WEATHER_DESC = 2;
+	private static final int COL_WEATHER_MAX_TEMP = 3;
+	private static final int COL_WEATHER_MIN_TEMP = 4;
+	private static final int COL_WEATHER_HUMIDITY = 5;
+	private static final int COL_WEATHER_WIND_SPEED = 6;
+	private static final int COL_WEATHER_DEGREES = 7;
+	private static final int COL_WEATHER_PRESSURE = 8;
+	private static final int COL_WEATHER_CONDITION_ID = 9;
+	private static final int DETAILED_WEATHER_LOADER_ID = 461;
+	private static final String[] FORECAST_COLUMNS = {
+	  WeatherContract.WeatherEntry.TABLE_NAME + "." + WeatherContract.WeatherEntry._ID,
+	  WeatherContract.WeatherEntry.COLUMN_DATE,
+	  WeatherContract.WeatherEntry.COLUMN_SHORT_DESC,
+	  WeatherContract.WeatherEntry.COLUMN_MAX_TEMP,
+	  WeatherContract.WeatherEntry.COLUMN_MIN_TEMP,
+	  WeatherContract.WeatherEntry.COLUMN_HUMIDITY,
+	  WeatherContract.WeatherEntry.COLUMN_WIND_SPEED,
+	  WeatherContract.WeatherEntry.COLUMN_DEGREES,
+	  WeatherContract.WeatherEntry.COLUMN_PRESSURE,
+	  WeatherContract.WeatherEntry.COLUMN_WEATHER_ID
 	};
 	@SuppressWarnings("unused")
 	private static final String TAG = ForecastDetailsFragment.class.getSimpleName();
-	TextView mDateView;
-	TextView mHighTemperatureView;
-	TextView mLowTemperatureView;
-	TextView mHumidityView;
-	TextView mWindSpeedView;
-	TextView mPressureView;
-	ImageView mWeatherIconView;
-	TextView mWeatherDescriptionView;
+	private TextView mDateView;
+	private TextView mHighTemperatureView;
+	private TextView mLowTemperatureView;
+	private TextView mHumidityView;
+	private TextView mWindSpeedView;
+	private TextView mPressureView;
+	private ImageView mWeatherIconView;
+	private TextView mWeatherDescriptionView;
 
-	ShareActionProvider mShareActionProvider;
+	private ShareActionProvider mShareActionProvider;
 
-	String mSharingText;
-	Uri mWeatherUri;
+	private String mSharingText;
+	private Uri mWeatherUri;
 
 	public ForecastDetailsFragment() {
 	}
@@ -80,12 +80,6 @@ public class ForecastDetailsFragment extends Fragment implements LoaderManager.L
 		ForecastDetailsFragment fragment = new ForecastDetailsFragment();
 		fragment.setArguments(args);
 		return fragment;
-	}
-
-	@Override
-	public void onActivityCreated(@Nullable Bundle savedInstanceState) {
-		super.onActivityCreated(savedInstanceState);
-		getLoaderManager().initLoader(DETAILED_WEATHER_LOADER_ID, null, this);
 	}
 
 	@Override
@@ -117,6 +111,12 @@ public class ForecastDetailsFragment extends Fragment implements LoaderManager.L
 	}
 
 	@Override
+	public void onActivityCreated(@Nullable Bundle savedInstanceState) {
+		super.onActivityCreated(savedInstanceState);
+		getLoaderManager().initLoader(DETAILED_WEATHER_LOADER_ID, null, this);
+	}
+
+	@Override
 	public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
 		inflater.inflate(R.menu.fragment_forecast_details, menu);
 		final MenuItem shareMenuItem = menu.findItem(R.id.action_share);
@@ -145,12 +145,7 @@ public class ForecastDetailsFragment extends Fragment implements LoaderManager.L
 		CursorLoader loader;
 		switch (id) {
 			case DETAILED_WEATHER_LOADER_ID:
-				loader = new CursorLoader(getActivity(),
-				                          mWeatherUri,
-				                          FORECAST_COLUMNS,
-				                          null,
-				                          null,
-				                          null);
+				loader = new CursorLoader(getActivity(), mWeatherUri, FORECAST_COLUMNS, null, null, null);
 				break;
 			default:
 				throw new UnsupportedOperationException("Unknown loader id: " + id);
@@ -164,15 +159,11 @@ public class ForecastDetailsFragment extends Fragment implements LoaderManager.L
 			boolean isMetric = Utility.isMetric(getActivity());
 
 			final int weatherIconResource = Utility.getArtResourceForWeatherCondition(data.getInt(
-					COL_WEATHER_CONDITION_ID));
+			  COL_WEATHER_CONDITION_ID));
 			final String dateString = Utility.formatDate(data.getLong(COL_WEATHER_DATE));
 			final String weatherDescription = data.getString(COL_WEATHER_DESC);
-			final String temperatureMin = Utility.formatTemperature(getContext(),
-			                                                        data.getDouble(COL_WEATHER_MIN_TEMP),
-			                                                        isMetric);
-			final String temperatureMax = Utility.formatTemperature(getContext(),
-			                                                        data.getDouble(COL_WEATHER_MAX_TEMP),
-			                                                        isMetric);
+			final String temperatureMin = Utility.formatTemperature(getContext(), data.getDouble(COL_WEATHER_MIN_TEMP));
+			final String temperatureMax = Utility.formatTemperature(getContext(), data.getDouble(COL_WEATHER_MAX_TEMP));
 			final String humidity = Utility.getFormattedHumidity(getContext(), data.getDouble(COL_WEATHER_HUMIDITY));
 			final String windSpeed = Utility.getFormattedWind(getContext(),
 			                                                  data.getFloat(COL_WEATHER_WIND_SPEED),
@@ -209,7 +200,7 @@ public class ForecastDetailsFragment extends Fragment implements LoaderManager.L
 
 	public void onLocationChanged(String newLocation) {
 		Uri uri = mWeatherUri;
-		if(mWeatherUri != null) {
+		if (mWeatherUri != null) {
 			long date = WeatherContract.WeatherEntry.getDateFromUri(uri);
 			mWeatherUri = WeatherContract.WeatherEntry.buildWeatherLocationWithDate(newLocation, date);
 			getLoaderManager().restartLoader(DETAILED_WEATHER_LOADER_ID, null, this);

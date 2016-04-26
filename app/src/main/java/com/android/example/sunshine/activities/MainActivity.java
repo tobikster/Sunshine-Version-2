@@ -20,11 +20,12 @@ import com.android.example.sunshine.sync.SunshineSyncAdapter;
 import com.android.example.sunshine.utils.Utility;
 
 public class MainActivity extends AppCompatActivity implements ForecastsFragment.Callback {
-	private static final String TAG = MainActivity.class.getSimpleName();
+	@SuppressWarnings("Unused")
+	private static final String LOG_TAG = MainActivity.class.getSimpleName();
 	private static final String FORECAST_DETAILS_FRAGMENT_TAG = "forecast_details_fragment_tag";
 
-	String mLocation;
-	boolean mTwoPaneLayout;
+	private String mLocation;
+	private boolean mTwoPaneLayout;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -84,31 +85,10 @@ public class MainActivity extends AppCompatActivity implements ForecastsFragment
 				startActivity(new Intent(this, SettingsActivity.class));
 				eventConsumed = true;
 				break;
-			case R.id.action_map:
-				openPreferredLocationOnMap();
-				eventConsumed = true;
-				break;
 			default:
 				eventConsumed = super.onOptionsItemSelected(item);
 		}
 		return eventConsumed;
-	}
-
-	private void openPreferredLocationOnMap() {
-		final SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(this);
-		final String location = preferences.getString(getString(R.string.pref_location_key),
-		                                              getString(R.string.pref_location_default));
-
-		Uri geoLocation = Uri.parse("geo:0,0?").buildUpon().appendQueryParameter("q", location).build();
-		Intent openMapIntent = new Intent(Intent.ACTION_VIEW);
-		openMapIntent.setData(geoLocation);
-		if (openMapIntent.resolveActivity(getPackageManager()) != null) {
-			startActivity(openMapIntent);
-		}
-		else {
-			Log.d(TAG,
-			      "openPreferredLocationOnMap: Couldn't call " + location + ", no activities can handle the Intent");
-		}
 	}
 
 	@Override
