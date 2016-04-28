@@ -44,7 +44,8 @@ public abstract class RecyclerViewCursorAdapter<VH extends android.support.v7.wi
 		final boolean registerContentObserver = (flags & FLAG_REGISTER_CONTENT_OBSERVER) == FLAG_REGISTER_CONTENT_OBSERVER;
 		mChangeObserver = (registerContentObserver) ? new ChangeObserver() : null;
 		mDataSetObserver = (registerContentObserver) ? new MyDataSetObserver() : null;
-		setCursor(cursor);
+		mCursor = null;
+		swapCursor(cursor);
 	}
 
 	/**
@@ -55,21 +56,6 @@ public abstract class RecyclerViewCursorAdapter<VH extends android.support.v7.wi
 	@Override
 	public Cursor getCursor() {
 		return mCursor;
-	}
-
-	private void setCursor(final Cursor cursor) {
-		mCursor = cursor;
-		mDataValid = mCursor != null;
-		mRowIDColumn = (mCursor != null) ? mCursor.getColumnIndexOrThrow("_id") : -1;
-
-		if (cursor != null) {
-			if (mChangeObserver != null) {
-				cursor.registerContentObserver(mChangeObserver);
-			}
-			if (mDataSetObserver != null) {
-				cursor.registerDataSetObserver(mDataSetObserver);
-			}
-		}
 	}
 
 	/**
@@ -150,7 +136,18 @@ public abstract class RecyclerViewCursorAdapter<VH extends android.support.v7.wi
 					oldCursor.unregisterDataSetObserver(mDataSetObserver);
 				}
 			}
-			setCursor(newCursor);
+			mCursor = newCursor;
+			mDataValid = mCursor != null;
+			mRowIDColumn = (mCursor != null) ? mCursor.getColumnIndexOrThrow("_id") : -1;
+
+			if (newCursor != null) {
+				if (mChangeObserver != null) {
+					newCursor.registerContentObserver(mChangeObserver);
+				}
+				if (mDataSetObserver != null) {
+					newCursor.registerDataSetObserver(mDataSetObserver);
+				}
+			}
 			notifyDataSetChanged();
 		}
 		return oldCursor;

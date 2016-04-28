@@ -50,14 +50,14 @@ public class MainActivity extends AppCompatActivity implements ForecastsFragment
 	protected void onResume() {
 		super.onResume();
 		String currentLocation = Utility.getPreferredLocation(this);
-//		ForecastsFragment forecastsFragment = (ForecastsFragment) getSupportFragmentManager().findFragmentById(R.id.fragment_forecasts);
-//		if (mTwoPaneLayout && forecastsFragment != null) {
-//			forecastsFragment.setUseTodayLayout(false);
-//		}
+		ForecastsFragment_new forecastsFragment = (ForecastsFragment_new) getSupportFragmentManager().findFragmentById(R.id.fragment_forecasts);
+		if (mTwoPaneLayout && forecastsFragment != null) {
+			forecastsFragment.setTodayLayoutUsed(false);
+		}
 		if (currentLocation != null && !currentLocation.equals(mLocation)) {
-//			if (forecastsFragment != null) {
-//				forecastsFragment.onLocationChanged();
-//			}
+			if (forecastsFragment != null) {
+				forecastsFragment.onLocationChanged();
+			}
 			ForecastDetailsFragment detailsFragment = (ForecastDetailsFragment) getSupportFragmentManager().findFragmentByTag(
 			  FORECAST_DETAILS_FRAGMENT_TAG);
 			if (detailsFragment != null) {

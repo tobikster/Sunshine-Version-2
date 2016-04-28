@@ -20,26 +20,17 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ImageView;
-import android.widget.TextView;
 
 import com.android.example.sunshine.R;
 import com.android.example.sunshine.data.WeatherContract;
-import com.android.example.sunshine.utils.RecyclerViewCursorAdapter;
+import com.android.example.sunshine.adapters.ForecastAdapter;
+import com.android.example.sunshine.sync.SunshineSyncAdapter;
 import com.android.example.sunshine.utils.Utility;
 
-/**
- * Created by pti on 27.04.16.
- */
-public class ForecastsFragment_new extends Fragment implements LoaderManager.LoaderCallbacks<Cursor> {
+public class ForecastsFragment_new extends Fragment implements LoaderManager.LoaderCallbacks<Cursor>, ForecastAdapter.ViewHolder.OnClickListener {
 	@SuppressWarnings("unused")
 	private static final String LOG_TAG = ForecastsFragment_new.class.getSimpleName();
 
-	private static final int COL_WEATHER_DATE = 1;
-	private static final int COL_WEATHER_DESC = 2;
-	private static final int COL_WEATHER_MAX_TEMP = 3;
-	private static final int COL_WEATHER_MIN_TEMP = 4;
-	private static final int COL_WEATHER_CONDITION_ID = 5;
 	private static final int COL_COORD_LAT = 6;
 	private static final int COL_COORD_LONG = 7;
 
@@ -56,9 +47,13 @@ public class ForecastsFragment_new extends Fragment implements LoaderManager.Loa
 
 	private static final int WEATHER_LOADER_ID = 0;
 
-	private RecyclerView mRecyclerView;
 	private ForecastAdapter mForecastAdapter;
 	private Callback mCallback;
+	private boolean mTodayLayoutUsed;
+
+	public ForecastsFragment_new() {
+		mTodayLayoutUsed = true;
+	}
 
 	@Override
 	public void onAttach(final Context context) {
@@ -88,11 +83,11 @@ public class ForecastsFragment_new extends Fragment implements LoaderManager.Loa
 	@Override
 	public void onViewCreated(final View view, @Nullable final Bundle savedInstanceState) {
 		super.onViewCreated(view, savedInstanceState);
-		mRecyclerView = (RecyclerView) view.findViewById(R.id.list_view_forecast);
-		mForecastAdapter = new ForecastAdapter(getContext(), null, 0);
-		mRecyclerView.setAdapter(mForecastAdapter);
-		mRecyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
-		mRecyclerView.setItemAnimator(new DefaultItemAnimator());
+		final RecyclerView recyclerView = (RecyclerView) view.findViewById(R.id.list_view_forecast);
+		mForecastAdapter = new ForecastAdapter(getContext(), null, 0, this);
+		recyclerView.setAdapter(mForecastAdapter);
+		recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
+		recyclerView.setItemAnimator(new DefaultItemAnimator());
 	}
 
 	@Override
@@ -144,7 +139,13 @@ public class ForecastsFragment_new extends Fragment implements LoaderManager.Loa
 				      "openPreferredLocationOnMap: Couldn't call " + geoLocation.toString() + ", no activities can handle the Intent");
 			}
 		}
+	}
 
+	public void setTodayLayoutUsed(boolean todayLayoutUsed) {
+		mTodayLayoutUsed = todayLayoutUsed;
+		if (mForecastAdapter != null) {
+			mForecastAdapter.setTodayLayoutUsed(todayLayoutUsed);
+		}
 	}
 
 	@Override
@@ -181,72 +182,23 @@ public class ForecastsFragment_new extends Fragment implements LoaderManager.Loa
 		mForecastAdapter.swapCursor(null);
 	}
 
-	public interface Callback {
-		void onItemClicked(Uri uri);
+	@Override
+	public void onClick(final Uri uri) {
+		if(mCallback != null) {
+			mCallback.onItemClicked(uri);
+		}
 	}
 
-	static class ForecastAdapter extends RecyclerViewCursorAdapter<ForecastAdapter.ViewHolder> {
+	private void refreshForecast() {
+		SunshineSyncAdapter.syncImmediately(getContext());
+	}
 
-		public ForecastAdapter(final Context context, final Cursor cursor, int flags) {
-			super(context, cursor, flags);
-		}
+	public void onLocationChanged() {
+		refreshForecast();
+		getLoaderManager().restartLoader(WEATHER_LOADER_ID, null, this);
+	}
 
-		@Override
-		public void onBindViewHolder(final ViewHolder viewHolder, final Cursor cursor) {
-//			final int itemType = getItemViewType(cursor.getPosition());
-
-			final int weatherId = cursor.getInt(ForecastsFragment_new.COL_WEATHER_CONDITION_ID);
-//			final int weatherIconResource = (itemType == VIEW_TYPE_TODAY) ?
-//			                                Utility.getArtResourceForWeatherCondition(weatherId) :
-//			                                Utility.getIconResourceForWeatherCondition(weatherId);
-			final int weatherIconResource = Utility.getIconResourceForWeatherCondition(weatherId);
-
-			final long date = cursor.getLong(ForecastsFragment_new.COL_WEATHER_DATE);
-			final String dateString = Utility.getFriendlyDayString(mContext, date);
-			final String highTemp = Utility.formatTemperature(mContext,
-			                                                  cursor.getDouble(ForecastsFragment_new.COL_WEATHER_MAX_TEMP));
-			final String lowTemp = Utility.formatTemperature(mContext,
-			                                                 cursor.getDouble(ForecastsFragment_new.COL_WEATHER_MIN_TEMP));
-			final String weatherDescription = cursor.getString(ForecastsFragment_new.COL_WEATHER_DESC);
-
-			viewHolder.mIconView.setImageResource(weatherIconResource);
-			viewHolder.mIconView.setContentDescription(weatherDescription);
-			viewHolder.mDateTextView.setText(dateString);
-			viewHolder.mHighTempTextView.setText(highTemp);
-			viewHolder.mLowTempTextView.setText(lowTemp);
-			viewHolder.mWeatherDescriptionTextView.setText(weatherDescription);
-			viewHolder.mDataUri = WeatherContract.WeatherEntry
-			  .buildWeatherLocationWithDate(Utility.getPreferredLocation(mContext), date);
-		}
-
-		@Override
-		public ViewHolder onCreateViewHolder(final ViewGroup parent, final int viewType) {
-			View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.list_item_forecast, parent, false);
-			return new ViewHolder(view);
-		}
-
-		static class ViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
-			private final ImageView mIconView;
-			private final TextView mDateTextView;
-			private final TextView mHighTempTextView;
-			private final TextView mLowTempTextView;
-			private final TextView mWeatherDescriptionTextView;
-			private Uri mDataUri;
-
-			public ViewHolder(final View itemView) {
-				super(itemView);
-				mIconView = (ImageView) itemView.findViewById(R.id.list_item_icon);
-				mDateTextView = (TextView) itemView.findViewById(R.id.list_item_date_textview);
-				mHighTempTextView = (TextView) itemView.findViewById(R.id.list_item_high_textview);
-				mLowTempTextView = (TextView) itemView.findViewById(R.id.list_item_low_textview);
-				mWeatherDescriptionTextView = (TextView) itemView.findViewById(R.id.list_item_forecast_textview);
-				itemView.setOnClickListener(this);
-			}
-
-			@Override
-			public void onClick(final View v) {
-			}
-
-		}
+	public interface Callback {
+		void onItemClicked(Uri uri);
 	}
 }
