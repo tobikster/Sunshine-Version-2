@@ -12,11 +12,11 @@ import android.view.MenuItem;
 
 import com.android.example.sunshine.R;
 import com.android.example.sunshine.fragments.ForecastDetailsFragment;
-import com.android.example.sunshine.fragments.ForecastsFragment;
+import com.android.example.sunshine.fragments.ForecastsFragment_new;
 import com.android.example.sunshine.sync.SunshineSyncAdapter;
 import com.android.example.sunshine.utils.Utility;
 
-public class MainActivity extends AppCompatActivity implements ForecastsFragment.Callback {
+public class MainActivity extends AppCompatActivity implements ForecastsFragment_new.Callback {
 	@SuppressWarnings({"unused"})
 	private static final String LOG_TAG = MainActivity.class.getSimpleName();
 	private static final String FORECAST_DETAILS_FRAGMENT_TAG = "forecast_details_fragment_tag";
@@ -39,7 +39,7 @@ public class MainActivity extends AppCompatActivity implements ForecastsFragment
 			actionBar.setDisplayUseLogoEnabled(true);
 			actionBar.setLogo(R.drawable.ic_logo);
 			actionBar.setTitle(null);
-			if(!mTwoPaneLayout) {
+			if (!mTwoPaneLayout) {
 				actionBar.setElevation(0f);
 			}
 		}
@@ -50,20 +50,19 @@ public class MainActivity extends AppCompatActivity implements ForecastsFragment
 	protected void onResume() {
 		super.onResume();
 		String currentLocation = Utility.getPreferredLocation(this);
-		ForecastsFragment forecastsFragment = (ForecastsFragment) getSupportFragmentManager().findFragmentById(R.id.fragment_forecasts);
-		if (mTwoPaneLayout && forecastsFragment != null) {
-			forecastsFragment.setUseTodayLayout(false);
-		}
+//		ForecastsFragment forecastsFragment = (ForecastsFragment) getSupportFragmentManager().findFragmentById(R.id.fragment_forecasts);
+//		if (mTwoPaneLayout && forecastsFragment != null) {
+//			forecastsFragment.setUseTodayLayout(false);
+//		}
 		if (currentLocation != null && !currentLocation.equals(mLocation)) {
-			if (forecastsFragment != null) {
-				forecastsFragment.onLocationChanged();
-			}
+//			if (forecastsFragment != null) {
+//				forecastsFragment.onLocationChanged();
+//			}
 			ForecastDetailsFragment detailsFragment = (ForecastDetailsFragment) getSupportFragmentManager().findFragmentByTag(
-					FORECAST_DETAILS_FRAGMENT_TAG);
+			  FORECAST_DETAILS_FRAGMENT_TAG);
 			if (detailsFragment != null) {
 				detailsFragment.onLocationChanged(currentLocation);
 			}
-			((ForecastsFragment) getSupportFragmentManager().findFragmentById(R.id.fragment_forecasts)).onLocationChanged();
 			mLocation = currentLocation;
 		}
 	}

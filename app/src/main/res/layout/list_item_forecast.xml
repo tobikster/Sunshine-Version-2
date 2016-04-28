@@ -2,11 +2,12 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
               android:id="@+id/list_item_forecast_text_view"
               android:layout_width="match_parent"
-              android:layout_height="match_parent"
+              android:layout_height="wrap_content"
               android:background="@drawable/touch_selector"
               android:gravity="center_vertical"
               android:minHeight="?android:attr/listPreferredItemHeight"
-              android:orientation="horizontal">
+              android:orientation="horizontal"
+              android:baselineAligned="false">
 
 	<FrameLayout android:layout_width="60dp"
 	             android:layout_height="match_parent">
