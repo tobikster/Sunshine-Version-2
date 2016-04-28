@@ -12,12 +12,12 @@
 	              android:orientation="horizontal">
 
 		<fragment android:id="@+id/fragment_forecasts"
-		          android:name="com.android.example.sunshine.fragments.ForecastsFragment_new"
+		          android:name="com.android.example.sunshine.fragments.ForecastsFragment"
 		          android:layout_width="0dp"
 		          android:layout_height="match_parent"
 		          android:layout_weight="2"
 		          tools:layout="@android:layout/list_content"
-		          tools:context="com.android.example.sunshine.fragments.ForecastsFragment_new"/>
+		          tools:context=".fragments.ForecastsFragment"/>
 
 		<FrameLayout android:id="@+id/weather_detail_container"
 		             android:layout_width="0dp"
