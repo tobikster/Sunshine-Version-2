@@ -163,9 +163,7 @@ public class WeatherProvider extends ContentProvider {
 		return sWeatherByLocationSettingQueryBuilder.query(mOpenHelper.getReadableDatabase(),
 		                                                   projection,
 		                                                   sLocationSettingAndDaySelection,
-		                                                   new String[]{
-		                                                     locationSetting, Long.toString(date)
-		                                                   },
+		                                                   new String[]{locationSetting, Long.toString(date)},
 		                                                   null,
 		                                                   null,
 		                                                   sortOrder);
@@ -238,12 +236,12 @@ public class WeatherProvider extends ContentProvider {
 
 	@Override
 	public int bulkInsert(@NonNull Uri uri, @NonNull ContentValues[] values) {
+		int returnCount = 0;
 		final SQLiteDatabase db = mOpenHelper.getWritableDatabase();
 		final int match = sUriMatcher.match(uri);
 		switch (match) {
 			case WEATHER:
 				db.beginTransaction();
-				int returnCount = 0;
 				try {
 					for (ContentValues value : values) {
 						normalizeDate(value);
@@ -260,10 +258,10 @@ public class WeatherProvider extends ContentProvider {
 				if (getContext() != null) {
 					getContext().getContentResolver().notifyChange(uri, null);
 				}
-				return returnCount;
 			default:
-				return super.bulkInsert(uri, values);
+				returnCount = super.bulkInsert(uri, values);
 		}
+		return returnCount;
 	}
 
 	@Override
@@ -297,8 +295,6 @@ public class WeatherProvider extends ContentProvider {
 				getContext().getContentResolver().notifyChange(uri, null);
 			}
 		}
-
-		db.close();
 		return deletedRows;
 	}
 
@@ -331,14 +327,12 @@ public class WeatherProvider extends ContentProvider {
 				getContext().getContentResolver().notifyChange(uri, null);
 			}
 		}
-
-		db.close();
 		return updatedRows;
 	}
 
 	/**
-	 * You do not need to call this method. This is a method specifically to assist the testing
-	 * framework in running smoothly. You can read more at: <a href="http://developer.android.com/reference/android/content/ContentProvider.html#shutdown()">http://developer.android.com/reference/android/content/ContentProvider.html#shutdown()</a>
+	 * You do not need to call this method. This is a method specifically to assist the testing framework in running
+	 * smoothly. You can read more at: <a href="http://developer.android.com/reference/android/content/ContentProvider.html#shutdown()">http://developer.android.com/reference/android/content/ContentProvider.html#shutdown()</a>
 	 */
 	@Override
 	@TargetApi(11)

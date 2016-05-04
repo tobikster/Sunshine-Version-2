@@ -22,12 +22,14 @@ public class MainActivity extends AppCompatActivity implements ForecastsFragment
 	private static final String FORECAST_DETAILS_FRAGMENT_TAG = "forecast_details_fragment_tag";
 
 	private String mLocation;
+	private boolean mMetricUnits;
 	private boolean mTwoPaneLayout;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		mLocation = Utility.getPreferredLocation(this);
+		mMetricUnits = Utility.isMetric(this);
 		setContentView(R.layout.activity_main);
 		mTwoPaneLayout = findViewById(R.id.weather_detail_container) != null;
 
@@ -50,20 +52,33 @@ public class MainActivity extends AppCompatActivity implements ForecastsFragment
 	protected void onResume() {
 		super.onResume();
 		String currentLocation = Utility.getPreferredLocation(this);
+		boolean metricUnits = Utility.isMetric(this);
 		ForecastsFragment forecastsFragment = (ForecastsFragment) getSupportFragmentManager().findFragmentById(R.id.fragment_forecasts);
+		ForecastDetailsFragment detailsFragment = (ForecastDetailsFragment) getSupportFragmentManager().findFragmentByTag(
+		  FORECAST_DETAILS_FRAGMENT_TAG);
+
 		if (mTwoPaneLayout && forecastsFragment != null) {
 			forecastsFragment.setTodayLayoutUsed(false);
 		}
+
 		if (currentLocation != null && !currentLocation.equals(mLocation)) {
 			if (forecastsFragment != null) {
 				forecastsFragment.onLocationChanged();
 			}
-			ForecastDetailsFragment detailsFragment = (ForecastDetailsFragment) getSupportFragmentManager().findFragmentByTag(
-			  FORECAST_DETAILS_FRAGMENT_TAG);
 			if (detailsFragment != null) {
 				detailsFragment.onLocationChanged(currentLocation);
 			}
 			mLocation = currentLocation;
+		}
+
+		if (metricUnits != mMetricUnits) {
+			if(forecastsFragment != null) {
+				forecastsFragment.onUnitsChanged();
+			}
+			if(detailsFragment != null) {
+				detailsFragment.onUnitsChanged();
+			}
+			mMetricUnits = metricUnits;
 		}
 	}
 

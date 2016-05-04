@@ -191,7 +191,6 @@ public class ForecastDetailsFragment extends Fragment implements LoaderManager.L
 
 	@Override
 	public void onLoaderReset(Loader<Cursor> loader) {
-
 	}
 
 	public void onLocationChanged(String newLocation) {
@@ -201,5 +200,9 @@ public class ForecastDetailsFragment extends Fragment implements LoaderManager.L
 			mWeatherUri = WeatherContract.WeatherEntry.buildWeatherLocationWithDate(newLocation, date);
 			getLoaderManager().restartLoader(DETAILED_WEATHER_LOADER_ID, null, this);
 		}
+	}
+
+	public void onUnitsChanged() {
+		getLoaderManager().restartLoader(DETAILED_WEATHER_LOADER_ID, null, this);
 	}
 }

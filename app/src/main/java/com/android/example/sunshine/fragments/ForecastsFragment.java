@@ -202,6 +202,11 @@ public class ForecastsFragment extends Fragment implements LoaderManager.LoaderC
 		getLoaderManager().restartLoader(WEATHER_LOADER_ID, null, this);
 	}
 
+	public void onUnitsChanged() {
+		refreshForecast();
+		getLoaderManager().restartLoader(WEATHER_LOADER_ID, null, this);
+	}
+
 	private void refreshForecast() {
 		SunshineSyncAdapter.syncImmediately(getContext());
 	}
