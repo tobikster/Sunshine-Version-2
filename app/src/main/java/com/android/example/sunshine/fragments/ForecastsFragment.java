@@ -10,6 +10,7 @@ import android.support.v4.app.Fragment;
 import android.support.v4.app.LoaderManager;
 import android.support.v4.content.CursorLoader;
 import android.support.v4.content.Loader;
+import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.widget.DefaultItemAnimator;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -29,7 +30,7 @@ import com.android.example.sunshine.sync.SunshineSyncAdapter;
 import com.android.example.sunshine.utils.RecyclerViewCursorAdapter;
 import com.android.example.sunshine.utils.Utility;
 
-public class ForecastsFragment extends Fragment implements LoaderManager.LoaderCallbacks<Cursor> {
+public class ForecastsFragment extends Fragment implements LoaderManager.LoaderCallbacks<Cursor>, SwipeRefreshLayout.OnRefreshListener {
 	@SuppressWarnings("unused")
 	private static final String LOG_TAG = ForecastsFragment.class.getSimpleName();
 
@@ -54,9 +55,13 @@ public class ForecastsFragment extends Fragment implements LoaderManager.LoaderC
 
 	private static final int WEATHER_LOADER_ID = 0;
 
+	private SwipeRefreshLayout mSwipeRefreshLayout;
+
 	private ForecastAdapter mForecastAdapter;
 	private Callback mCallback;
 	private boolean mTodayLayoutUsed;
+	private String mLocation;
+	private boolean mMetricUnits;
 
 	public ForecastsFragment() {
 		mTodayLayoutUsed = true;
@@ -97,6 +102,8 @@ public class ForecastsFragment extends Fragment implements LoaderManager.LoaderC
 	@Override
 	public void onViewCreated(final View view, @Nullable final Bundle savedInstanceState) {
 		super.onViewCreated(view, savedInstanceState);
+		mSwipeRefreshLayout = (SwipeRefreshLayout) view.findViewById(R.id.refresh_layout);
+		mSwipeRefreshLayout.setOnRefreshListener(this);
 		final RecyclerView recyclerView = (RecyclerView) view.findViewById(R.id.list_view_forecast);
 		mForecastAdapter = new ForecastAdapter(getContext(), null, 0, new ForecastAdapter.ViewHolder.OnClickListener() {
 			@Override
@@ -119,6 +126,23 @@ public class ForecastsFragment extends Fragment implements LoaderManager.LoaderC
 	}
 
 	@Override
+	public void onResume() {
+		super.onResume();
+		String location = Utility.getPreferredLocation(getContext());
+		boolean metricUnits = Utility.isMetric(getContext());
+		if(location != null && !location.equals(mLocation)) {
+			mSwipeRefreshLayout.setRefreshing(true);
+			refreshForecast();
+			mLocation = location;
+		}
+		if(metricUnits != mMetricUnits) {
+			mSwipeRefreshLayout.setRefreshing(true);
+			refreshForecast();
+			mMetricUnits = metricUnits;
+		}
+	}
+
+	@Override
 	public void onDetach() {
 		super.onDetach();
 		mCallback = null;
@@ -135,6 +159,12 @@ public class ForecastsFragment extends Fragment implements LoaderManager.LoaderC
 		switch (item.getItemId()) {
 			case R.id.action_map:
 				openPreferredLocationOnMap();
+				eventConsumed = true;
+				break;
+
+			case R.id.action_refresh:
+				mSwipeRefreshLayout.setRefreshing(true);
+				refreshForecast();
 				eventConsumed = true;
 				break;
 
@@ -198,17 +228,25 @@ public class ForecastsFragment extends Fragment implements LoaderManager.LoaderC
 	}
 
 	public void onLocationChanged() {
+		mSwipeRefreshLayout.setRefreshing(true);
 		refreshForecast();
 		getLoaderManager().restartLoader(WEATHER_LOADER_ID, null, this);
 	}
 
 	public void onUnitsChanged() {
+		mSwipeRefreshLayout.setRefreshing(true);
 		refreshForecast();
 		getLoaderManager().restartLoader(WEATHER_LOADER_ID, null, this);
 	}
 
 	private void refreshForecast() {
 		SunshineSyncAdapter.syncImmediately(getContext());
+		mSwipeRefreshLayout.setRefreshing(false);
+	}
+
+	@Override
+	public void onRefresh() {
+		refreshForecast();
 	}
 
 	public interface Callback {

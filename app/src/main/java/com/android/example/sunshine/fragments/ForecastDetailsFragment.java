@@ -66,6 +66,8 @@ public class ForecastDetailsFragment extends Fragment implements LoaderManager.L
 
 	private String mSharingText;
 	private Uri mWeatherUri;
+	private String mLocation;
+	private boolean mMetricUnits;
 
 	public ForecastDetailsFragment() {
 	}
@@ -112,6 +114,23 @@ public class ForecastDetailsFragment extends Fragment implements LoaderManager.L
 	public void onActivityCreated(@Nullable Bundle savedInstanceState) {
 		super.onActivityCreated(savedInstanceState);
 		getLoaderManager().initLoader(DETAILED_WEATHER_LOADER_ID, null, this);
+	}
+
+	@Override
+	public void onResume() {
+		super.onResume();
+		String location = Utility.getPreferredLocation(getContext());
+		boolean metricUnits = Utility.isMetric(getContext());
+		if(location != null && !location.equals(mLocation)) {
+			long date = WeatherContract.WeatherEntry.getDateFromUri(mWeatherUri);
+			mWeatherUri = WeatherContract.WeatherEntry.buildWeatherLocationWithDate(location, date);
+			mLocation = location;
+			getLoaderManager().restartLoader(DETAILED_WEATHER_LOADER_ID, null, this);
+		}
+		if(metricUnits != mMetricUnits) {
+			mMetricUnits = metricUnits;
+			getLoaderManager().restartLoader(DETAILED_WEATHER_LOADER_ID, null, this);
+		}
 	}
 
 	@Override
