@@ -20,17 +20,24 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView;
+import android.widget.TextView;
 
 import com.android.example.sunshine.R;
 import com.android.example.sunshine.data.WeatherContract;
-import com.android.example.sunshine.adapters.ForecastAdapter;
 import com.android.example.sunshine.sync.SunshineSyncAdapter;
+import com.android.example.sunshine.utils.RecyclerViewCursorAdapter;
 import com.android.example.sunshine.utils.Utility;
 
-public class ForecastsFragment extends Fragment implements LoaderManager.LoaderCallbacks<Cursor>, ForecastAdapter.ViewHolder.OnClickListener {
+public class ForecastsFragment extends Fragment implements LoaderManager.LoaderCallbacks<Cursor> {
 	@SuppressWarnings("unused")
 	private static final String LOG_TAG = ForecastsFragment.class.getSimpleName();
 
+	private static final int COL_WEATHER_DATE = 1;
+	private static final int COL_WEATHER_DESCRIPTION = 2;
+	private static final int COL_TEMP_MAX = 3;
+	private static final int COL_TEMP_MIN = 4;
+	private static final int COL_WEATHER_ID = 5;
 	private static final int COL_COORD_LAT = 6;
 	private static final int COL_COORD_LONG = 7;
 
@@ -53,6 +60,13 @@ public class ForecastsFragment extends Fragment implements LoaderManager.LoaderC
 
 	public ForecastsFragment() {
 		mTodayLayoutUsed = true;
+	}
+
+	public void setTodayLayoutUsed(boolean todayLayoutUsed) {
+		mTodayLayoutUsed = todayLayoutUsed;
+		if (mForecastAdapter != null) {
+			mForecastAdapter.setTodayLayoutUsed(todayLayoutUsed);
+		}
 	}
 
 	@Override
@@ -84,7 +98,15 @@ public class ForecastsFragment extends Fragment implements LoaderManager.LoaderC
 	public void onViewCreated(final View view, @Nullable final Bundle savedInstanceState) {
 		super.onViewCreated(view, savedInstanceState);
 		final RecyclerView recyclerView = (RecyclerView) view.findViewById(R.id.list_view_forecast);
-		mForecastAdapter = new ForecastAdapter(getContext(), null, 0, this);
+		mForecastAdapter = new ForecastAdapter(getContext(), null, 0, new ForecastAdapter.ViewHolder.OnClickListener() {
+			@Override
+			public void onClick(final Uri uri) {
+				if (mCallback != null) {
+					mCallback.onItemClicked(uri);
+				}
+			}
+		});
+		mForecastAdapter.setTodayLayoutUsed(mTodayLayoutUsed);
 		recyclerView.setAdapter(mForecastAdapter);
 		recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
 		recyclerView.setItemAnimator(new DefaultItemAnimator());
@@ -141,13 +163,6 @@ public class ForecastsFragment extends Fragment implements LoaderManager.LoaderC
 		}
 	}
 
-	public void setTodayLayoutUsed(boolean todayLayoutUsed) {
-		mTodayLayoutUsed = todayLayoutUsed;
-		if (mForecastAdapter != null) {
-			mForecastAdapter.setTodayLayoutUsed(todayLayoutUsed);
-		}
-	}
-
 	@Override
 	public Loader<Cursor> onCreateLoader(final int id, final Bundle args) {
 		CursorLoader loader;
@@ -182,23 +197,117 @@ public class ForecastsFragment extends Fragment implements LoaderManager.LoaderC
 		mForecastAdapter.swapCursor(null);
 	}
 
-	@Override
-	public void onClick(final Uri uri) {
-		if(mCallback != null) {
-			mCallback.onItemClicked(uri);
-		}
+	public void onLocationChanged() {
+		refreshForecast();
+		getLoaderManager().restartLoader(WEATHER_LOADER_ID, null, this);
 	}
 
 	private void refreshForecast() {
 		SunshineSyncAdapter.syncImmediately(getContext());
 	}
 
-	public void onLocationChanged() {
-		refreshForecast();
-		getLoaderManager().restartLoader(WEATHER_LOADER_ID, null, this);
-	}
-
 	public interface Callback {
 		void onItemClicked(Uri uri);
+	}
+
+	public static class ForecastAdapter extends RecyclerViewCursorAdapter<ForecastAdapter.ViewHolder> {
+		private static final int ITEM_VIEW_TYPE_TODAY = 0;
+		private static final int ITEM_VIEW_TYPE_OTHER = 1;
+		private ViewHolder.OnClickListener mOnClickListener;
+
+		private boolean mTodayLayoutUsed;
+
+		public ForecastAdapter(final Context context, final Cursor cursor, int flags, ViewHolder.OnClickListener onClickListener) {
+			super(context, cursor, flags);
+			mOnClickListener = onClickListener;
+			mTodayLayoutUsed = true;
+		}
+
+		public void setTodayLayoutUsed(boolean useTodayLayout) {
+			mTodayLayoutUsed = useTodayLayout;
+		}
+
+		@Override
+		public void onBindViewHolder(final ViewHolder viewHolder, final Cursor cursor) {
+			final int itemType = viewHolder.getItemViewType();
+
+
+			final int weatherId = cursor.getInt(COL_WEATHER_ID);
+			final int weatherIconResource = (itemType == ITEM_VIEW_TYPE_TODAY) ?
+			                                Utility.getArtResourceForWeatherCondition(weatherId) :
+			                                Utility.getIconResourceForWeatherCondition(weatherId);
+
+			final long date = cursor.getLong(COL_WEATHER_DATE);
+			final String dateString = Utility.getFriendlyDayString(mContext, date);
+			final String highTemp = Utility.formatTemperature(mContext, cursor.getDouble(COL_TEMP_MAX));
+			final String lowTemp = Utility.formatTemperature(mContext, cursor.getDouble(COL_TEMP_MIN));
+			final String weatherDescription = cursor.getString(COL_WEATHER_DESCRIPTION);
+
+			viewHolder.mIconView.setImageResource(weatherIconResource);
+			viewHolder.mIconView.setContentDescription(weatherDescription);
+			viewHolder.mDateTextView.setText(dateString);
+			viewHolder.mHighTempTextView.setText(highTemp);
+			viewHolder.mLowTempTextView.setText(lowTemp);
+			viewHolder.mWeatherDescriptionTextView.setText(weatherDescription);
+			viewHolder.mDataUri = WeatherContract.WeatherEntry
+			  .buildWeatherLocationWithDate(Utility.getPreferredLocation(mContext), date);
+		}
+
+		@Override
+		public ViewHolder onCreateViewHolder(final ViewGroup parent, final int viewType) {
+			final int layoutResource;
+			switch (viewType) {
+				case ITEM_VIEW_TYPE_TODAY:
+					layoutResource = R.layout.list_item_forecast_today;
+					break;
+
+				case ITEM_VIEW_TYPE_OTHER:
+					layoutResource = R.layout.list_item_forecast;
+					break;
+
+				default:
+					layoutResource = -1;
+			}
+
+			View view = LayoutInflater.from(parent.getContext()).inflate(layoutResource, parent, false);
+			return new ViewHolder(view, mOnClickListener);
+		}
+
+		@Override
+		public int getItemViewType(final int position) {
+			return (mTodayLayoutUsed && position == 0) ? ITEM_VIEW_TYPE_TODAY : ITEM_VIEW_TYPE_OTHER;
+		}
+
+		public static class ViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
+			private final ImageView mIconView;
+			private final TextView mDateTextView;
+			private final TextView mHighTempTextView;
+			private final TextView mLowTempTextView;
+			private final TextView mWeatherDescriptionTextView;
+			private Uri mDataUri;
+			private OnClickListener mOnClickListener;
+
+			public ViewHolder(final View itemView, OnClickListener onClickListener) {
+				super(itemView);
+				mIconView = (ImageView) itemView.findViewById(R.id.list_item_icon);
+				mDateTextView = (TextView) itemView.findViewById(R.id.list_item_date_textview);
+				mHighTempTextView = (TextView) itemView.findViewById(R.id.list_item_high_textview);
+				mLowTempTextView = (TextView) itemView.findViewById(R.id.list_item_low_textview);
+				mWeatherDescriptionTextView = (TextView) itemView.findViewById(R.id.list_item_forecast_textview);
+				itemView.setOnClickListener(this);
+				mOnClickListener = onClickListener;
+			}
+
+			@Override
+			public void onClick(final View v) {
+				if (mOnClickListener != null) {
+					mOnClickListener.onClick(mDataUri);
+				}
+			}
+
+			public interface OnClickListener {
+				void onClick(Uri uri);
+			}
+		}
 	}
 }
