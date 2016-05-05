@@ -25,6 +25,7 @@ import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteQueryBuilder;
 import android.net.Uri;
 import android.support.annotation.NonNull;
+import android.util.Log;
 
 public class WeatherProvider extends ContentProvider {
 	@SuppressWarnings("unused")
@@ -85,6 +86,7 @@ public class WeatherProvider extends ContentProvider {
 	public Cursor query(@NonNull Uri uri, String[] projection, String selection, String[] selectionArgs, String sortOrder) {
 		// Here's the switch statement that, given a URI, will determine what kind of request it is,
 		// and query the database accordingly.
+		Log.d(LOG_TAG, String.format("query: uri: %s", uri));
 		Cursor retCursor;
 		switch (sUriMatcher.match(uri)) {
 			// "weather"
@@ -134,17 +136,22 @@ public class WeatherProvider extends ContentProvider {
 	private Cursor getWeatherByLocationSetting(Uri uri, String[] projection, String sortOrder) {
 		String locationSetting = WeatherContract.WeatherEntry.getLocationSettingFromUri(uri);
 		long startDate = WeatherContract.WeatherEntry.getStartDateFromUri(uri);
+		int forecastSize = WeatherContract.WeatherEntry.getForecastSizeFromUri(uri);
 
 		String[] selectionArgs;
 		String selection;
+		String limit = null;
 
 		if (startDate == 0) {
 			selection = sLocationSettingSelection;
 			selectionArgs = new String[]{locationSetting};
 		}
 		else {
-			selectionArgs = new String[]{locationSetting, Long.toString(startDate)};
 			selection = sLocationSettingWithStartDateSelection;
+			selectionArgs = new String[]{locationSetting, Long.toString(startDate)};
+		}
+		if(forecastSize > 0) {
+			limit = Integer.toString(forecastSize);
 		}
 
 		return sWeatherByLocationSettingQueryBuilder.query(mOpenHelper.getReadableDatabase(),
@@ -153,7 +160,8 @@ public class WeatherProvider extends ContentProvider {
 		                                                   selectionArgs,
 		                                                   null,
 		                                                   null,
-		                                                   sortOrder);
+		                                                   sortOrder,
+		                                                   limit);
 	}
 
 	private Cursor getWeatherByLocationSettingAndDate(Uri uri, String[] projection, String sortOrder) {

@@ -89,6 +89,9 @@ public class WeatherContract {
 		public static final String CONTENT_ITEM_TYPE = ContentResolver.CURSOR_ITEM_BASE_TYPE + "/" + CONTENT_AUTHORITY + "/" + PATH_WEATHER;
 		// @formatter:on
 
+		public static final String PARAMETER_NAME_START_DATE = "start_date";
+		public static final String PARAMETER_NAME_FORECAST_SIZE = "forecast_size";
+
 		public static final String TABLE_NAME = "weather";
 
 		/** Column with the foreign key into the location table. */
@@ -130,12 +133,15 @@ public class WeatherContract {
 			return CONTENT_URI.buildUpon().appendPath(locationSetting).build();
 		}
 
-		public static Uri buildWeatherLocationWithStartDate(String locationSetting, long startDate) {
-			long normalizedDate = normalizeDate(startDate);
-			return CONTENT_URI.buildUpon()
-			                  .appendPath(locationSetting)
-			                  .appendQueryParameter(COLUMN_DATE, Long.toString(normalizedDate))
-			                  .build();
+		public static Uri buildWeatherLocationWithStartDate(String locationSetting, long startDate, int size) {
+			final long normalizedDate = normalizeDate(startDate);
+			final Uri.Builder builder = CONTENT_URI.buildUpon()
+			                                       .appendPath(locationSetting)
+			                                       .appendQueryParameter(COLUMN_DATE, Long.toString(normalizedDate));
+			if(size > 0) {
+				builder.appendQueryParameter(PARAMETER_NAME_FORECAST_SIZE, Integer.toString(size));
+			}
+			return builder.build();
 		}
 
 		public static Uri buildWeatherLocationWithDate(String locationSetting, long date) {
@@ -161,6 +167,15 @@ public class WeatherContract {
 			else {
 				return 0;
 			}
+		}
+
+		public static int getForecastSizeFromUri(Uri uri) {
+			int forecastSize = 0;
+			String forecastSizeString = uri.getQueryParameter(PARAMETER_NAME_FORECAST_SIZE);
+			if (forecastSizeString != null && forecastSizeString.length() > 0) {
+				forecastSize = Integer.parseInt(forecastSizeString);
+			}
+			return forecastSize;
 		}
 	}
 }

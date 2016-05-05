@@ -362,7 +362,8 @@ public class TestProvider extends AndroidTestCase {
 		weatherCursor = mContext.getContentResolver()
 		                        .query(WeatherContract.WeatherEntry
 				                               .buildWeatherLocationWithStartDate(TestUtilities.TEST_LOCATION,
-				                                                                  TestUtilities.TEST_DATE),
+				                                                                  TestUtilities.TEST_DATE,
+				                                                                  -1),
 		                               null, // leaving "columns" null just returns all the columns.
 		                               null, // cols for "where" clause
 		                               null, // values for "where" clause

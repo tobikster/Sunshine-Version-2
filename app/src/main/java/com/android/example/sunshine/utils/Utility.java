@@ -19,15 +19,19 @@ import android.content.Context;
 import android.content.SharedPreferences;
 import android.preference.PreferenceManager;
 import android.support.annotation.DrawableRes;
-import android.text.format.Time;
+import android.util.Log;
 
 import com.android.example.sunshine.R;
 
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
+import java.util.Calendar;
 import java.util.Date;
+import java.util.Locale;
 
 public class Utility {
+	@SuppressWarnings("unused")
+	private static final String LOG_TAG = Utility.class.getSimpleName();
 	// Format used for storing dates in the database.  ALso used for converting those strings
 	// back into date objects for comparison/processing.
 	public static final String DATE_FORMAT = "yyyyMMdd";
@@ -48,45 +52,36 @@ public class Utility {
 		// For the next 5 days: "Wednesday" (just the day name)
 		// For all days after that: "Mon Jun 8"
 
-		Time time = new Time();
-		time.setToNow();
-		long currentTime = System.currentTimeMillis();
-		int julianDay = Time.getJulianDay(dateInMillis, time.gmtoff);
-		int currentJulianDay = Time.getJulianDay(currentTime, time.gmtoff);
+		String dateString;
+		Calendar calendar = Calendar.getInstance();
+		final int currentDay = calendar.get(Calendar.DAY_OF_YEAR);
+		calendar.setTimeInMillis(dateInMillis);
+		final int day = calendar.get(Calendar.DAY_OF_YEAR);
 
 		// If the date we're building the String for is today's date, the format
 		// is "Today, June 24"
-		if (julianDay == currentJulianDay) {
-			String today = context.getString(R.string.today);
-			int formatId = R.string.format_full_friendly_date;
-			return String.format(context.getString(formatId, today, getFormattedMonthDay(context, dateInMillis)));
+		if (day == currentDay) {
+			dateString = getFormattedMonthDay(dateInMillis);
 		}
-		else if (julianDay < currentJulianDay + 7) {
-			// If the input date is less than a week in the future, just return the day name.
-			return getDayName(context, dateInMillis);
+		else if (day < currentDay + 7) {
+			dateString = getDayName(context, dateInMillis);
 		}
 		else {
-			// Otherwise, use the form "Mon Jun 3"
-			SimpleDateFormat shortenedDateFormat = new SimpleDateFormat("EEE MMM dd");
-			return shortenedDateFormat.format(dateInMillis);
+			DateFormat formatter = DateFormat.getDateInstance();
+			dateString = formatter.format(dateInMillis);
 		}
+		return dateString;
 	}
 
 	/**
 	 * Converts db date format to the format "Month day", e.g "June 24".
 	 *
-	 * @param context      Context to use for resource localization
 	 * @param dateInMillis The db formatted date string, expected to be of the form specified in Utility.DATE_FORMAT
 	 *
 	 * @return The day in the form of a string formatted "December 6"
 	 */
-	public static String getFormattedMonthDay(final Context context, final long dateInMillis) {
-		Time time = new Time();
-		time.setToNow();
-		SimpleDateFormat dbDateFormat = new SimpleDateFormat(Utility.DATE_FORMAT);
-		SimpleDateFormat monthDayFormat = new SimpleDateFormat("MMMM dd");
-		String monthDayString = monthDayFormat.format(dateInMillis);
-		return monthDayString;
+	public static String getFormattedMonthDay(final long dateInMillis) {
+		return SimpleDateFormat.getDateInstance(SimpleDateFormat.LONG).format(dateInMillis);
 	}
 
 	/**
@@ -101,29 +96,35 @@ public class Utility {
 		// If the date is today, return the localized version of "Today" instead of the actual
 		// day name.
 
-		Time t = new Time();
-		t.setToNow();
-		int julianDay = Time.getJulianDay(dateInMillis, t.gmtoff);
-		int currentJulianDay = Time.getJulianDay(System.currentTimeMillis(), t.gmtoff);
-		if (julianDay == currentJulianDay) {
-			return context.getString(R.string.today);
+		String dayName;
+		Calendar calendar = Calendar.getInstance();
+		final int currentDay = calendar.get(Calendar.DAY_OF_YEAR);
+		calendar.setTimeInMillis(dateInMillis);
+		final int day = calendar.get(Calendar.DAY_OF_YEAR);
+		if (day == currentDay) {
+			dayName = context.getString(R.string.today);
 		}
-		else if (julianDay == currentJulianDay + 1) {
-			return context.getString(R.string.tomorrow);
+		else if (day == currentDay + 1) {
+			dayName = context.getString(R.string.tomorrow);
 		}
 		else {
-			Time time = new Time();
-			time.setToNow();
-			// Otherwise, the format is just the day of the week (e.g "Wednesday".
-			SimpleDateFormat dayFormat = new SimpleDateFormat("EEEE");
-			return dayFormat.format(dateInMillis);
+			dayName = new SimpleDateFormat("cccc", Locale.getDefault()).format(dateInMillis);
 		}
+		return dayName;
 	}
 
 	public static String getPreferredLocation(final Context context) {
 		SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
 		return prefs.getString(context.getString(R.string.pref_key_location),
-		                       context.getString(R.string.pref_location_default));
+		                       context.getString(R.string.pref_default_location));
+	}
+
+	public static int getPreferredForecastSize(final Context context) {
+		SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(context);
+		int forecastSize = Integer.parseInt(preferences.getString(context.getString(R.string.pref_key_forecast_size),
+		                                              context.getString(R.string.pref_default_forecast_size)));
+		Log.d(LOG_TAG, String.format("getPreferredForecastSize: forecastSize: %d", forecastSize));
+		return forecastSize;
 	}
 
 	public static String formatTemperature(final Context context, final double temperature) {
@@ -134,8 +135,8 @@ public class Utility {
 	public static boolean isMetric(final Context context) {
 		SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
 		return prefs.getString(context.getString(R.string.pref_key_units),
-		                       context.getString(R.string.pref_units_metric))
-		            .equals(context.getString(R.string.pref_units_metric));
+		                       context.getString(R.string.pref_value_units_metric))
+		            .equals(context.getString(R.string.pref_value_units_metric));
 	}
 
 	public static String formatDate(final long dateInMillis) {

@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+	<string name="pref_key_location" translatable="false">pref_location</string>
+	<string name="pref_label_location">Location</string>
+	<string name="pref_default_location" translatable="false">Wroclaw</string>
+
+	<string name="pref_key_units" translatable="false">pref_units</string>
+	<string name="pref_label_units">Units</string>
+	<string name="pref_default_units" translatable="false">@string/pref_units_metric</string>
+	<string name="pref_value_units_metric" translatable="false">metric</string>
+	<string name="pref_value_units_imperial" translatable="false">imperial</string>
+	<string name="pref_units_metric">metric</string>
+	<string name="pref_units_imperial">imperial</string>
+
+	<string name="pref_key_notifications_enabled" translatable="false">pref_notifications_enabled</string>
+	<string name="pref_label_notifications_enabled">Notifications enabled</string>
+	<string name="pref_default_notifications_enabled" translatable="false">true</string>
+	<string name="pref_notifications_enabled_off">Disabled</string>
+	<string name="pref_notifications_enabled_on">Enabled</string>
+
+	<string name="pref_key_last_notification" translatable="false">last_notification</string>
+
+	<string name="pref_key_forecast_size" translatable="false">pref_forecast_size</string>
+	<string name="pref_default_forecast_size" translatable="false">14</string>
+	<string name="pref_label_forecast_size">Forecast size</string>
+</resources>

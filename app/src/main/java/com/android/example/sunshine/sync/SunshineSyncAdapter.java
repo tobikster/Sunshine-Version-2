@@ -403,7 +403,7 @@ public class SunshineSyncAdapter extends AbstractThreadedSyncAdapter {// Interva
 		boolean notificationsEnabled = prefs.getBoolean(context.getString(R.string.pref_key_notifications_enabled),
 		                                                Boolean.parseBoolean(context.getString(R.string.pref_default_notifications_enabled)));
 		if (notificationsEnabled) {
-			String lastNotificationKey = context.getString(R.string.pref_last_notification);
+			String lastNotificationKey = context.getString(R.string.pref_key_last_notification);
 			long lastSync = prefs.getLong(lastNotificationKey, 0);
 
 			if (System.currentTimeMillis() - lastSync >= DAY_IN_MILLIS) {

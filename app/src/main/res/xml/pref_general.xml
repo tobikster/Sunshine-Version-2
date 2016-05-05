@@ -1,12 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 <PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
-	<EditTextPreference android:defaultValue="@string/pref_location_default"
+	<EditTextPreference android:defaultValue="@string/pref_default_location"
 	                    android:inputType="text"
 	                    android:key="@string/pref_key_location"
 	                    android:singleLine="true"
 	                    android:title="@string/pref_label_location"/>
 
-	<ListPreference android:defaultValue="@string/pref_units_default"
+	<ListPreference android:defaultValue="@string/pref_default_units"
 	                android:entries="@array/pref_units_entries"
 	                android:entryValues="@array/pref_units_values"
 	                android:key="@string/pref_key_units"
@@ -17,4 +17,9 @@
 	                    android:summaryOff="@string/pref_notifications_enabled_off"
 	                    android:summaryOn="@string/pref_notifications_enabled_on"
 	                    android:title="@string/pref_label_notifications_enabled"/>
+
+	<EditTextPreference android:defaultValue="@string/pref_default_forecast_size"
+	                    android:inputType="number"
+	                    android:key="@string/pref_key_forecast_size"
+	                    android:title="@string/pref_label_forecast_size"/>
 </PreferenceScreen>

@@ -62,6 +62,7 @@ public class ForecastsFragment extends Fragment implements LoaderManager.LoaderC
 	private boolean mTodayLayoutUsed;
 	private String mLocation;
 	private boolean mMetricUnits;
+	private int mForecastSize;
 
 	public ForecastsFragment() {
 		mTodayLayoutUsed = true;
@@ -130,15 +131,23 @@ public class ForecastsFragment extends Fragment implements LoaderManager.LoaderC
 		super.onResume();
 		String location = Utility.getPreferredLocation(getContext());
 		boolean metricUnits = Utility.isMetric(getContext());
-		if(location != null && !location.equals(mLocation)) {
+		int forecastSize = Utility.getPreferredForecastSize(getContext());
+		if (location != null && !location.equals(mLocation)) {
 			mSwipeRefreshLayout.setRefreshing(true);
 			refreshForecast();
 			mLocation = location;
 		}
-		if(metricUnits != mMetricUnits) {
+		if (metricUnits != mMetricUnits) {
+//			mSwipeRefreshLayout.setRefreshing(true);
+//			refreshForecast();
+			getLoaderManager().restartLoader(WEATHER_LOADER_ID, null, this);
+			mMetricUnits = metricUnits;
+		}
+		if (forecastSize != mForecastSize) {
+			mForecastSize = forecastSize;
 			mSwipeRefreshLayout.setRefreshing(true);
 			refreshForecast();
-			mMetricUnits = metricUnits;
+			getLoaderManager().restartLoader(WEATHER_LOADER_ID, null, this);
 		}
 	}
 
@@ -193,6 +202,11 @@ public class ForecastsFragment extends Fragment implements LoaderManager.LoaderC
 		}
 	}
 
+	private void refreshForecast() {
+		SunshineSyncAdapter.syncImmediately(getContext());
+		mSwipeRefreshLayout.setRefreshing(false);
+	}
+
 	@Override
 	public Loader<Cursor> onCreateLoader(final int id, final Bundle args) {
 		CursorLoader loader;
@@ -200,11 +214,14 @@ public class ForecastsFragment extends Fragment implements LoaderManager.LoaderC
 			case WEATHER_LOADER_ID:
 				final String locationString = Utility.getPreferredLocation(getActivity());
 				final String sortOrder = WeatherContract.WeatherEntry.COLUMN_DATE + " ASC";
+				final int forecastSize = Utility.getPreferredForecastSize(getContext());
+				Log.d(LOG_TAG, String.format("onCreateLoader: forecastSize: %d", forecastSize));
 				final Uri weatherForLocationUri = WeatherContract.WeatherEntry.buildWeatherLocationWithStartDate(
 				  locationString,
-				  System.currentTimeMillis());
+				  System.currentTimeMillis(),
+				  forecastSize);
 
-				loader = new CursorLoader(getActivity(),
+				loader = new CursorLoader(getContext(),
 				                          weatherForLocationUri,
 				                          FORECAST_COLUMNS,
 				                          null,
@@ -225,23 +242,6 @@ public class ForecastsFragment extends Fragment implements LoaderManager.LoaderC
 	@Override
 	public void onLoaderReset(final Loader<Cursor> loader) {
 		mForecastAdapter.swapCursor(null);
-	}
-
-	public void onLocationChanged() {
-		mSwipeRefreshLayout.setRefreshing(true);
-		refreshForecast();
-		getLoaderManager().restartLoader(WEATHER_LOADER_ID, null, this);
-	}
-
-	public void onUnitsChanged() {
-		mSwipeRefreshLayout.setRefreshing(true);
-		refreshForecast();
-		getLoaderManager().restartLoader(WEATHER_LOADER_ID, null, this);
-	}
-
-	private void refreshForecast() {
-		SunshineSyncAdapter.syncImmediately(getContext());
-		mSwipeRefreshLayout.setRefreshing(false);
 	}
 
 	@Override
