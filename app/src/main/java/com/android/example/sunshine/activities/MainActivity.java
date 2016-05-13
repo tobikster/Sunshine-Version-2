@@ -1,5 +1,7 @@
 package com.android.example.sunshine.activities;
 
+import android.app.NotificationManager;
+import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
@@ -47,6 +49,13 @@ public class MainActivity extends AppCompatActivity implements ForecastsFragment
 		}
 
 		SunshineSyncAdapter.initializeSyncAdapter(this);
+	}
+
+	@Override
+	protected void onResume() {
+		super.onResume();
+		final NotificationManager notificationService = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
+		notificationService.cancel(SunshineSyncAdapter.WEATHER_NOTIFICATION_ID);
 	}
 
 	@Override

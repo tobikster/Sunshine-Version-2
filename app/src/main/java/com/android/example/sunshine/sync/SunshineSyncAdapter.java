@@ -50,8 +50,8 @@ public class SunshineSyncAdapter extends AbstractThreadedSyncAdapter {// Interva
 	// 60 seconds (1 minute)  180 = 3 hours
 	public static final int SYNC_INTERVAL = 3 * 60 * 60;
 	public static final int SYNC_FLEXTIME = SYNC_INTERVAL / 3;
+	public static final int WEATHER_NOTIFICATION_ID = 630;
 	private static final long DAY_IN_MILLIS = 24 * 60 * 60 * 1000;
-	private static final int WEATHER_NOTIFICATION_ID = 630;
 	private final static String FORECAST_BASE_URL = "http://api.openweathermap.org/data/2.5/forecast/daily?";
 	private final static String QUERY_PARAM = "q";
 	private final static String FORMAT_PARAM = "mode";
@@ -261,7 +261,7 @@ public class SunshineSyncAdapter extends AbstractThreadedSyncAdapter {// Interva
 	/**
 	 * Take the String representing the complete forecast in JSON Format and pull out the data we need to construct the
 	 * Strings needed for the wireframes.
-	 * <p/>
+	 * <p>
 	 * Fortunately parsing is easy:  constructor takes the JSON string and converts it into an Object hierarchy for us.
 	 */
 	private String[] getWeatherDataFromJson(String forecastJsonStr, String locationSetting) throws JSONException {
